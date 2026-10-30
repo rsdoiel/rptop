@@ -1,0 +1,13 @@
+Executing on device: 0001:01:00.0
+Identifying board
+Control Protocol Version: 2
+Firmware Version: 5.1.1 (release,app)
+Logger Version: 0
+Device Architecture: HAILO10H
+Device supported features: PCIE
+LCS: 5
+SoC ID: 949BC329299CD284A6D5E3B951F01765E1D82B1940E8AF1EC0A6ACB8C66EAA33
+ULT ID: 00000183887222D02000AA9B
+PM Values: 0000007801000021010000EB000000000000000000000000
+board SKU-ID: 6
+

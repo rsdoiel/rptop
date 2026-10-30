@@ -1,0 +1,50 @@
+{
+  "@context": "https://w3id.org/codemeta/3.0",
+  "type": "SoftwareSourceCode",
+  "codeRepository": "https://github.com/rsdoiel/rptop",
+  "author": [
+    {
+      "id": "https://orcid.org/0000-0003-0900-6903",
+      "type": "Person",
+      "givenName": "R. S.",
+      "familyName": "Doiel",
+      "email": "rsdoiel@gmail.com"
+    }
+  ],
+  "dateCreated": "2026-10-29",
+  "dateModified": "2026-10-30",
+  "description": "A vitals dashboard for a Raspberry Pi 5 with an optional AI HAT+ 2: a terminal dashboard and a verb-oriented command line over the same collectors, so each readout (CPU, memory, temperatures, throttling, fan, disk, network) is also a scriptable report of one value and its unit, with JSONL recording for comparing runs.",
+  "keywords": [
+    "Raspberry Pi",
+    "monitoring",
+    "dashboard",
+    "TUI",
+    "CLI",
+    "Hailo"
+  ],
+  "name": "rptop",
+  "license": "https://www.gnu.org/licenses/agpl-3.0.txt",
+  "operatingSystem": [
+    "Raspberry Pi OS (64-bit, Debian 13 trixie)"
+  ],
+  "processorRequirements": [
+    "arm64 (Raspberry Pi 5)"
+  ],
+  "programmingLanguage": [
+    "Go >= 1.27.3"
+  ],
+  "softwareRequirements": [
+    "Go >= 1.27.3"
+  ],
+  "softwareSuggestions": [
+    "CMTools >= 0.0.46",
+    "Pandoc >= 3.9",
+    "GNU Make >= 3"
+  ],
+  "version": "0.0.0",
+  "developmentStatus": "concept",
+  "issueTracker": "https://github.com/rsdoiel/rptop/issues",
+  "releaseNotes": "Pre-release scaffold: the rptop command parses its standard options and reports usage errors with the workspace exit codes.",
+  "copyrightYear": 2026,
+  "copyrightHolder": "R. S. Doiel"
+}
