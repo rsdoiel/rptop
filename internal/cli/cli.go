@@ -88,13 +88,15 @@ func Run(args []string, stdout, stderr io.Writer) int {
  */
 func RunEnv(env Env, args []string, stdout, stderr io.Writer) int {
 	fs := flag.NewFlagSet(appName, flag.ContinueOnError)
-	fs.SetOutput(stderr)
+	fs.SetOutput(io.Discard)
 	fs.Usage = func() {}
 	var std standardOptions
 	std.register(fs, true)
+	var dash dashboardOptions
+	dash.register(fs)
 
 	if err := fs.Parse(args); err != nil {
-		fmt.Fprintf(stderr, "Run '%s -help' for usage.\n", appName)
+		fmt.Fprintf(stderr, "%s: %v. Run '%s -help' for usage.\n", appName, err, appName)
 		return ExitUsage
 	}
 	switch {
@@ -108,8 +110,11 @@ func RunEnv(env Env, args []string, stdout, stderr io.Writer) int {
 		fmt.Fprintf(stdout, "%s %s %s\n", appName, rptop.Version, rptop.ReleaseHash)
 		return ExitOK
 	case fs.NArg() == 0:
-		helpPage(stdout, HelpText)
-		return ExitOK
+		return runDashboard(env, &dash, stdout, stderr)
+	}
+	if name := dash.given(fs); name != "" {
+		fmt.Fprintf(stderr, "%s: option -%s belongs to the bare command, not to a verb. Run '%s -help' for usage.\n", appName, name, appName)
+		return ExitUsage
 	}
 
 	verb, rest := fs.Arg(0), fs.Args()[1:]

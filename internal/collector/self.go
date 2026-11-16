@@ -99,3 +99,28 @@ func SelfPercent(prev, cur float64, dt time.Duration) (float64, error) {
 	}
 	return (cur - prev) / clockTick / dt.Seconds() * 100, nil
 }
+
+/** Uptime returns how long the machine has been running, from /proc/uptime.
+ *
+ * Returns:
+ *   time.Duration — time since boot
+ *   error         — wrapped collector class
+ *
+ * Example:
+ *   up, err := collector.Uptime(collector.DefaultSources()) // 72h3m
+ */
+func Uptime(s Sources) (time.Duration, error) {
+	txt, err := readText(s.Uptime)
+	if err != nil {
+		return 0, err
+	}
+	f := strings.Fields(txt)
+	if len(f) == 0 {
+		return 0, fmt.Errorf("%s: %w: empty", s.Uptime, ErrUnparseable)
+	}
+	v, perr := strconv.ParseFloat(f[0], 64)
+	if perr != nil || v < 0 {
+		return 0, fmt.Errorf("%s: %w: %q", s.Uptime, ErrUnparseable, txt)
+	}
+	return time.Duration(v * float64(time.Second)), nil
+}

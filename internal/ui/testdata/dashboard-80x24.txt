@@ -1,0 +1,18 @@
+┌ rptop ─ harvey ─ rec ● rptop-20261115-143012.jsonl 12 samples 0:20 ──────────┐
+│ CPU  [██████░░░░░░░░░░]  37.0%  2400 MHz  load 0.90                          │
+│   c0 [█░░░]  31.0% c1 [██░░]  45.1% c2 [█░░░]  22.4% c3 [██░░]  54.3%        │
+│      ▁▂▂▃▃▄▄▅▅▆▆▇▇█▁▂▂▃▄▄                                                    │
+│ MEM  [██░░░░░░░░░░░░░░] 2.1G / 15.8G  swap 0 B                               │
+├ Temperatures ────────────────────────────────────────────────────────────────┤
+│ SoC     59.0 °C  ▁▂▃▃▄▅▆▆▇█▁▂▃▃▄▅▆▆▇█                                        │
+│ PMIC    49.2 °C  ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁                                        │
+│ Hailo   68.3 °C  ▁▁▂▂▂▃▃▄▄▄▅▅▅▆▆▇▇▇██                                        │
+│ RP1     51.4 °C  ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁                                        │
+├ Power / Health ──────────────────────────────────────────────────────────────┤
+│ Throttle  now: none                                                          │
+│ since boot: arm frequency capped, throttled, soft temperature limit          │
+│ Fan  3725 rpm     Core  0.7838 V                                             │
+├ Disk / Net ──────────────────────────────────────────────────────────────────┤
+│ Disk  read 12.0 MB/s   write 3.0 MB/s                                        │
+│ Net   rx 1.2 MB/s   tx 102.4 KB/s                                            │
+└ q quit  r record  R label  m marker  p pause  ? help ────────────────────────┘

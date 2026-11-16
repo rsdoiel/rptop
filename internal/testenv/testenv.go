@@ -82,6 +82,7 @@ func New(t *testing.T, fixtureDir string) *Fixture {
 			NetDev:      p("proc_net_dev"),
 			SelfStat:    p("proc_self_stat"),
 			SelfStatus:  p("proc_self_status"),
+			Uptime:      p("proc_uptime"),
 			Vcgencmd: func(args ...string) ([]byte, error) {
 				name := "vcgencmd"
 				for _, a := range args {

@@ -34,7 +34,7 @@ func TestLicenseAllSpellings(t *testing.T) {
 }
 
 func TestHelpAllSpellingsFillsTheMarkup(t *testing.T) {
-	for _, args := range [][]string{{"-h"}, {"-help"}, {"--help"}, {"help"}, {}} {
+	for _, args := range [][]string{{"-h"}, {"-help"}, {"--help"}, {"help"}} {
 		var out, errOut bytes.Buffer
 		if code := Run(args, &out, &errOut); code != ExitOK {
 			t.Fatalf("%v: exit code = %d, want %d", args, code, ExitOK)
