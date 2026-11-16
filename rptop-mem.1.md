@@ -1,6 +1,6 @@
-%rptop-mem(1) user manual | version 0.0.0 95fce46
+%rptop-mem(1) user manual | version 0.0.1 bb5682a
 % R. S. Doiel
-% 2026-10-30
+% 2026-11-15
 
 # NAME
 

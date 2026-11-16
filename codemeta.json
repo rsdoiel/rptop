@@ -12,7 +12,7 @@
     }
   ],
   "dateCreated": "2026-10-29",
-  "dateModified": "2026-10-30",
+  "dateModified": "2026-11-15",
   "description": "A vitals dashboard for a Raspberry Pi 5 with an optional AI HAT+ 2: a terminal dashboard and a verb-oriented command line over the same collectors, so each readout (CPU, memory, temperatures, throttling, fan, disk, network) is also a scriptable report of one value and its unit, with JSONL recording for comparing runs.",
   "keywords": [
     "Raspberry Pi",
@@ -43,10 +43,10 @@
     "HailoRT >= 5.4.0",
     "A C compiler (GCC or Clang) for the Hailo temperature"
   ],
-  "version": "0.0.0",
-  "developmentStatus": "concept",
+  "version": "0.0.1",
+  "developmentStatus": "wip",
   "issueTracker": "https://github.com/rsdoiel/rptop/issues",
-  "releaseNotes": "Pre-release scaffold: the rptop command parses its standard options and reports usage errors with the workspace exit codes.",
+  "releaseNotes": "First release. A vitals dashboard and scriptable reporter for a Raspberry Pi 5 with an optional AI HAT+ 2: a terminal dashboard (bare rptop; keys q r R m p ?; options -interval, -warn-temp, -crit-temp, -out; no configuration file), reading verbs temp, cpu, mem, fan, volts, disk, net, throttle and list with -n, -j, -above and -below and the workspace exit codes, and JSONL recording (rptop record, or r in the dashboard) with a meta line, samples, markers and a meta_end line, a free-space guard and flat element names (DR-0003). The Hailo temperature is read in process through libhailort behind the hailo build tag (HailoRT >= 5.4.0). Linux arm64 on a Raspberry Pi 5 only.",
   "copyrightYear": 2026,
   "copyrightHolder": "R. S. Doiel"
 }

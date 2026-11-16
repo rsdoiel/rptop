@@ -1,0 +1,27 @@
+
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: rptop
+abstract: |-
+  A vitals dashboard for a Raspberry Pi 5 with an optional AI HAT+ 2: a terminal dashboard and a verb-oriented command line over the same collectors, so each readout (CPU, memory, temperatures, throttling, fan, disk, network) is also a scriptable report of one value and its unit, with JSONL recording for comparing runs.
+authors:
+  - family-names: Doiel
+    given-names: R. S.
+    orcid: https://orcid.org/0000-0003-0900-6903
+    email: rsdoiel@gmail.com
+
+
+repository-code: "https://github.com/rsdoiel/rptop"
+version: 0.0.1
+
+
+license-url: "https://www.gnu.org/licenses/agpl-3.0.txt"
+keywords:
+  - Raspberry Pi
+  - monitoring
+  - dashboard
+  - TUI
+  - CLI
+  - Hailo
+
