@@ -88,6 +88,8 @@ func runVerb(env Env, verb string, args []string, stdout, stderr io.Writer) int 
 		return runThrottle(env, args, stdout, stderr)
 	case "list":
 		return runList(env, args, stdout, stderr)
+	case "record":
+		return runRecord(env, args, stdout, stderr)
 	}
 	fs, std := newVerbFlags(verb)
 	var number, asJSON bool

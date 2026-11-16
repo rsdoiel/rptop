@@ -10,7 +10,7 @@ GIT_GROUP = rsdoiel
 
 PROGRAMS = rptop
 
-VERBS = temp cpu mem fan volts disk net throttle list
+VERBS = temp cpu mem fan volts disk net throttle record list
 
 # The Hailo temperature needs cgo and libhailort (DR-0001). Build with the
 # hailo tag when the HailoRT header is installed; without it the element

@@ -376,8 +376,8 @@ func TestVerbHelp(t *testing.T) {
 			}
 		}
 	}
-	if len(verbHelp) != 9 {
-		t.Errorf("verbHelp has %d pages, want 9", len(verbHelp))
+	if len(verbHelp) != 10 {
+		t.Errorf("verbHelp has %d pages, want 10", len(verbHelp))
 	}
 }
 

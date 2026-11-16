@@ -28,6 +28,14 @@ const (
 // ErrUsage marks a bad command line; wrap it with %w to exit 2.
 var ErrUsage = errors.New("usage")
 
+// ErrCantCreate marks an output that cannot be created: the file exists or its
+// directory cannot be made. Wrap it with %w to exit 73.
+var ErrCantCreate = errors.New("cannot create")
+
+// ErrIO marks a read or write that failed part way, or a disk that is too
+// full to go on. Wrap it with %w to exit 74.
+var ErrIO = errors.New("i/o failure")
+
 /** Code is the one place an error becomes an exit code (DR-0002 9). It
  * classifies by sentinel with errors.Is, never by message text.
  *
@@ -46,6 +54,10 @@ func Code(err error) int {
 		return OK
 	case errors.Is(err, ErrUsage):
 		return Usage
+	case errors.Is(err, ErrCantCreate):
+		return CantCreate
+	case errors.Is(err, ErrIO):
+		return IO
 	case errors.Is(err, collector.ErrAbsent):
 		return NoInput
 	case errors.Is(err, collector.ErrUnreachable):

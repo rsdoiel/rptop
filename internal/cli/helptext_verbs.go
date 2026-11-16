@@ -4,14 +4,15 @@ import "strings"
 
 // verbDoc describes one verb for its help page.
 type verbDoc struct {
-	name     string
-	synopsis string
-	summary  string
-	elements [][2]string // element, description
-	options  [][2]string // extra options beyond -n, -j, -above, -below
-	notes    string
-	examples string
-	readonly bool // false for throttle and list, which have their own options
+	name       string
+	synopsis   string
+	summary    string
+	elements   [][2]string // element, description
+	options    [][2]string // extra options beyond -n, -j, -above, -below
+	notes      string
+	examples   string
+	readonly   bool   // false for throttle, list and record, which have their own options
+	exitStatus string // replaces verbExitStatus when set
 }
 
 const verbExitStatus = `# EXIT STATUS
@@ -99,6 +100,37 @@ var verbDocs = []verbDoc{
 			{"-j, -json", `print {"name","raw","now":[],"since_boot":[]}`}},
 		notes:    "Prints two lines, now: and since boot:, each listing the flags or none. Exits 0 when nothing is active now and 1 when something is, so a script is not tripped by an event hours ago. There is no -n, -above or -below.",
 		examples: "{app_name} throttle || echo throttled right now"},
+	{name: "record",
+		synopsis: "{app_name} record [-label TEXT] [-out PATH] [-interval D] [-duration D]",
+		summary:  "Record every element to a JSONL file until interrupted, in the foreground.",
+		options: [][2]string{
+			{"-label TEXT", "a name for the run, stored on every line; use it to compare runs"},
+			{"-out PATH", "a file, or an existing directory; the default is rptop-YYYYMMDD-HHMMSS.jsonl (UTC) in the current directory. A directory that does not exist is made. An existing file is never appended to or overwritten"},
+			{"-i, -interval D", "time between samples, a Go duration; default 1s, at least 500ms"},
+			{"-duration D", "stop after this long; default until Ctrl-C or SIGTERM"}},
+		notes: "Each run is one file: a meta line, one sample line per interval, and a meta_end line that is the last line whatever ended the run. " +
+			"A file with no meta_end was cut short by a crash or power loss. Keys are the element names of rptop list, a reading that cannot be taken is null, " +
+			"and the units are in the meta line. The first sample is written one interval after the start. " +
+			"If free space falls below 64 MiB the run ends with reason low_space and the command exits 74. " +
+			"The path of the finished file is printed on standard output; progress goes to standard error. See DR-0003 for the format.",
+		examples: "{app_name} record -label before-ollama -duration 10m\n\nf=$({app_name} record -duration 60s -out runs/) && jq -s 'map(.[\"temp.soc\"]) | max' \"$f\"",
+		exitStatus: `# EXIT STATUS
+
+0
+: the run ended on Ctrl-C, SIGTERM or -duration, and meta_end was written
+
+2
+: the command line is wrong: -interval below 500ms or not positive, a negative -duration, a surplus argument
+
+73
+: the file already exists, or its directory cannot be made
+
+74
+: a write failed, or free space fell below the guard; the run ended with meta_end where it could
+
+77
+: the operating system refused access to the output
+`},
 	{name: "list",
 		synopsis: "{app_name} list [-j]",
 		summary:  "Every element, its unit and whether it can be read on this machine.",
@@ -135,7 +167,11 @@ func buildVerbHelp() map[string]string {
 		if d.notes != "" {
 			b.WriteString(d.notes + "\n\n")
 		}
-		b.WriteString(verbExitStatus)
+		if d.exitStatus != "" {
+			b.WriteString(d.exitStatus)
+		} else {
+			b.WriteString(verbExitStatus)
+		}
 		if d.examples != "" {
 			b.WriteString("\n# EXAMPLES\n\n" + d.examples + "\n")
 		}

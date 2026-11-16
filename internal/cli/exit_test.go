@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/rsdoiel/rptop/internal/collector"
+	"github.com/rsdoiel/rptop/internal/exitcode"
 )
 
 func TestExitCode(t *testing.T) {
@@ -18,6 +19,8 @@ func TestExitCode(t *testing.T) {
 		{fmt.Errorf("x: %w", collector.ErrUnreachable), ExitUnavailable},
 		{fmt.Errorf("x: %w", collector.ErrUnparseable), ExitData},
 		{fmt.Errorf("x: %w", collector.ErrRefused), ExitNoPermission},
+		{fmt.Errorf("x: %w", exitcode.ErrCantCreate), ExitCantCreate},
+		{fmt.Errorf("x: %w", exitcode.ErrIO), ExitIO},
 		{ErrUsage, ExitUsage},
 		{fmt.Errorf("bad: %w", ErrUsage), ExitUsage},
 		{errors.New("nothing classified this"), ExitInternal},
