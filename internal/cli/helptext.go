@@ -18,7 +18,9 @@ const HelpText = `%{app_name}(1) user manual | version {version} {release_hash}
 
 {app_name} [-h|-help] [-l|-license] [-v|-version]
 
-{app_name} VERB [PARAMETERS...]
+{app_name} VERB [ELEMENT] [-n|-number] [-j|-json] [-above X] [-below X]
+
+{app_name} list [-j|-json]
 
 {app_name} help [VERB]
 
@@ -29,7 +31,37 @@ CPU, memory, temperatures, throttling, fan, disk and network. A dashboard and a
 verb-oriented command line read the same collectors, so every element on the
 dashboard is also a verb that reports one value and its unit.
 
-This is a pre-release scaffold. No verbs exist yet.
+# VERBS
+
+temp
+: temperatures in °C: soc, pmic, hailo, rp1
+
+cpu
+: utilisation in %, frequency in MHz, load average: total, core N, freq, load
+
+mem
+: memory in bytes: used, total, swap
+
+fan
+: fan speed in rpm
+
+volts
+: core voltage in V
+
+disk
+: bytes per second read and written
+
+net
+: bytes per second received and sent
+
+throttle
+: what the firmware is throttling now and since boot
+
+list
+: every element, its unit and whether it can be read on this machine
+
+A verb with no element reports every element of its group, one line each.
+Run {app_name} help VERB to read about a verb.
 
 # EXIT STATUS
 

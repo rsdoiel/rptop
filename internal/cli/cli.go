@@ -30,9 +30,6 @@ const (
 
 const appName = "rptop"
 
-// verbHelp maps each verb to its help page. Empty until the first verb lands.
-var verbHelp = map[string]string{}
-
 // standardOptions are the options every program of the workspace accepts.
 type standardOptions struct {
 	help, license, version bool
@@ -70,6 +67,25 @@ func helpPage(out io.Writer, text string) {
  *   os.Exit(cli.Run(os.Args[1:], os.Stdout, os.Stderr))
  */
 func Run(args []string, stdout, stderr io.Writer) int {
+	return RunEnv(DefaultEnv(), args, stdout, stderr)
+}
+
+/** RunEnv is Run with the machine injected, so tests read fixtures instead of
+ * the real /sys, /proc and Hailo device.
+ *
+ * Parameters:
+ *   env    (Env)       — where sensors are read from
+ *   args   ([]string)  — the command line without the program name
+ *   stdout (io.Writer) — normal output
+ *   stderr (io.Writer) — errors and warnings
+ *
+ * Returns:
+ *   int — the process exit code
+ *
+ * Example:
+ *   code := cli.RunEnv(cli.DefaultEnv(), []string{"temp", "soc"}, os.Stdout, os.Stderr)
+ */
+func RunEnv(env Env, args []string, stdout, stderr io.Writer) int {
 	fs := flag.NewFlagSet(appName, flag.ContinueOnError)
 	fs.SetOutput(stderr)
 	fs.Usage = func() {}
@@ -98,6 +114,9 @@ func Run(args []string, stdout, stderr io.Writer) int {
 	verb, rest := fs.Arg(0), fs.Args()[1:]
 	if verb == "help" {
 		return runHelp(rest, stdout, stderr)
+	}
+	if _, ok := verbHelp[verb]; ok {
+		return runVerb(env, verb, rest, stdout, stderr)
 	}
 	fmt.Fprintf(stderr, "%s: unknown verb %q. Run '%s -help' for usage.\n", appName, verb, appName)
 	return ExitUsage
