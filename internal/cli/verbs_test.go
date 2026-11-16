@@ -12,12 +12,14 @@ import (
 	"time"
 
 	"github.com/rsdoiel/rptop/internal/collector"
+	"github.com/rsdoiel/rptop/internal/testenv"
 )
 
 const fixtureDir = "../../testdata/pi5-trixie"
 
 type fixture struct {
-	dir   string
+	*testenv.Fixture
+	t     *testing.T
 	slept []time.Duration
 }
 
@@ -25,79 +27,13 @@ type fixture struct {
 // Sleep can advance the counters, and returns an Env reading them.
 func newFixture(t *testing.T) (*fixture, Env) {
 	t.Helper()
-	f := &fixture{dir: t.TempDir()}
-	var copyTree func(src, dst string)
-	copyTree = func(src, dst string) {
-		entries, err := os.ReadDir(src)
-		if err != nil {
-			t.Fatal(err)
-		}
-		os.MkdirAll(dst, 0o755)
-		for _, e := range entries {
-			if e.IsDir() {
-				copyTree(filepath.Join(src, e.Name()), filepath.Join(dst, e.Name()))
-				continue
-			}
-			b, err := os.ReadFile(filepath.Join(src, e.Name()))
-			if err != nil {
-				t.Fatal(err)
-			}
-			os.WriteFile(filepath.Join(dst, e.Name()), b, 0o644)
-		}
-	}
-	copyTree(fixtureDir, f.dir)
-	p := func(n string) string { return filepath.Join(f.dir, n) }
-	env := Env{
-		Sources: collector.Sources{
-			ThermalZone: p("thermal_zone0_temp"),
-			HwmonDir:    p("hwmon"),
-			CPUFreq:     p("scaling_cur_freq"),
-			LoadAvg:     p("proc_loadavg"),
-			MemInfo:     p("proc_meminfo_swap"),
-			Stat:        p("proc_stat_cpus"),
-			DiskStats:   p("proc_diskstats"),
-			NetDev:      p("proc_net_dev"),
-			Vcgencmd: func(args ...string) ([]byte, error) {
-				name := "vcgencmd"
-				for _, a := range args {
-					name += "_" + a
-				}
-				return os.ReadFile(p(name))
-			},
-		},
-		OpenHailo: func() (collector.HailoReader, error) {
-			return nil, fmt.Errorf("hailo: %w", collector.ErrAbsent)
-		},
-	}
+	f := &fixture{Fixture: testenv.New(t, fixtureDir), t: t}
+	env := Env{Env: f.Env}
 	env.Sleep = func(d time.Duration) {
 		f.slept = append(f.slept, d)
-		f.advance(t)
+		f.Advance()
 	}
 	return f, env
-}
-
-// advance moves every counter forward as if the interval had passed.
-func (f *fixture) advance(t *testing.T) {
-	sub := func(file, old, new string) {
-		p := filepath.Join(f.dir, file)
-		b, err := os.ReadFile(p)
-		if err != nil {
-			t.Fatal(err)
-		}
-		s := string(b)
-		if !strings.Contains(s, old) {
-			t.Fatalf("%s: %q not found", file, old)
-		}
-		os.WriteFile(p, []byte(strings.Replace(s, old, new, 1)), 0o644)
-	}
-	// all cores: +500 user, +500 idle = 50% busy; core1: +300 user, +700 idle = 30%
-	sub("proc_stat_cpus", "cpu  13006 16 11666 28261786", "cpu  13506 16 11666 28262286")
-	sub("proc_stat_cpus", "cpu1 3624 0 2925 7064772", "cpu1 3924 0 2925 7065472")
-	sub("proc_stat_cpus", "cpu0 3178 9 2514 7064147", "cpu0 3178 9 2514 7065147") // idle cores still advance
-	sub("proc_stat_cpus", "cpu2 2889 2 2917 7065913", "cpu2 2889 2 2917 7066913")
-	sub("proc_stat_cpus", "cpu3 3314 4 3308 7066952", "cpu3 3314 4 3308 7067952")
-	sub("proc_diskstats", "mmcblk0 32942 28466 2523237", "mmcblk0 32942 28466 2525285") // +2048 sectors = 1 MiB
-	sub("proc_net_dev", "wlan0: 528478125", "wlan0: 528479125")                         // +1000 bytes rx
 }
 
 func run(env Env, args ...string) (code int, stdout, stderr string) {

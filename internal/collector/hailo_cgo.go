@@ -75,7 +75,7 @@ func (h *hailoDevice) Temps() (HailoTemps, error) {
 	if st := C.rptop_temps(h.dev, &a, &b); st != C.HAILO_SUCCESS {
 		return HailoTemps{}, hailoErr("temperature", st)
 	}
-	return HailoTemps{TS0: float64(a), TS1: float64(b)}, nil
+	return HailoTemps{TS0: widen32(float32(a)), TS1: widen32(float32(b))}, nil
 }
 
 // Close releases the device; it is safe to call twice.

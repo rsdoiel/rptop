@@ -34,6 +34,8 @@ var (
  *   Stat        (string) — /proc/stat
  *   DiskStats   (string) — /proc/diskstats
  *   NetDev      (string) — /proc/net/dev
+ *   SelfStat    (string) — /proc/self/stat
+ *   SelfStatus  (string) — /proc/self/status
  *   Vcgencmd    (func)   — runs vcgencmd with args; nil when it is not installed
  *
  * Example:
@@ -48,6 +50,8 @@ type Sources struct {
 	Stat        string
 	DiskStats   string
 	NetDev      string
+	SelfStat    string
+	SelfStatus  string
 	Vcgencmd    func(args ...string) ([]byte, error)
 }
 
@@ -69,6 +73,8 @@ func DefaultSources() Sources {
 		Stat:        "/proc/stat",
 		DiskStats:   "/proc/diskstats",
 		NetDev:      "/proc/net/dev",
+		SelfStat:    "/proc/self/stat",
+		SelfStatus:  "/proc/self/status",
 	}
 	if path, err := exec.LookPath("vcgencmd"); err == nil {
 		s.Vcgencmd = func(args ...string) ([]byte, error) {

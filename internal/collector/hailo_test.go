@@ -36,3 +36,14 @@ func TestTempHailoNilReader(t *testing.T) {
 		t.Errorf("nil reader: err = %v, want ErrAbsent", err)
 	}
 }
+
+// libhailort reports float32; widening it naively gives 54.61600112915039.
+func TestWiden32KeepsTheShortestDecimal(t *testing.T) {
+	for _, v := range []float32{54.616, 53.4, 0.1, 61.25} {
+		got := widen32(v)
+		want := map[float32]float64{54.616: 54.616, 53.4: 53.4, 0.1: 0.1, 61.25: 61.25}[v]
+		if got != want {
+			t.Errorf("widen32(%v) = %v, want %v", v, got, want)
+		}
+	}
+}

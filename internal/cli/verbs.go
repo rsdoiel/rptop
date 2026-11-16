@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/rsdoiel/rptop/internal/collector"
+	"github.com/rsdoiel/rptop/internal/element"
 	"github.com/rsdoiel/rptop/internal/reading"
 )
 
@@ -109,7 +110,7 @@ func runVerb(env Env, verb string, args []string, stdout, stderr io.Writer) int 
 	fs.Func("above", "exit 1 unless the reading is above X", setNum(&above, &hasAbove))
 	fs.Func("below", "exit 1 unless the reading is below X", setNum(&below, &hasBelow))
 	interval := time.Second
-	if rateVerbs[verb] {
+	if element.RateVerb(verb) {
 		fs.DurationVar(&interval, "interval", time.Second, "time between the two samples")
 		fs.DurationVar(&interval, "i", time.Second, "time between the two samples")
 	}
@@ -128,11 +129,11 @@ func runVerb(env Env, verb string, args []string, stdout, stderr io.Writer) int 
 		return usageErr(stderr, verb, errors.New("-interval must be positive"))
 	}
 
-	c := &ctx{env: env, interval: interval}
-	defer c.closeAll()
-	all := elementsOf(verb, c)
+	c := element.NewCtx(env.Env)
+	defer c.Close()
+	all := element.Group(verb, env.Sources)
 
-	var selected []elem
+	var selected []element.Elem
 	group := len(pos) == 0
 	switch {
 	case group:
@@ -145,13 +146,13 @@ func runVerb(env Env, verb string, args []string, stdout, stderr io.Writer) int 
 		if err != nil || n < 0 {
 			return usageErr(stderr, verb, fmt.Errorf("core number must be 0 or more, got %q", pos[1]))
 		}
-		selected = []elem{coreElem(n)}
+		selected = []element.Elem{element.CoreElem(n)}
 	case len(pos) > 1:
 		return usageErr(stderr, verb, fmt.Errorf("surplus argument %q", pos[1]))
 	default:
 		for _, e := range all {
-			if e.short == pos[0] {
-				selected = []elem{e}
+			if e.Short == pos[0] {
+				selected = []element.Elem{e}
 			}
 		}
 		if selected == nil {
@@ -159,13 +160,22 @@ func runVerb(env Env, verb string, args []string, stdout, stderr io.Writer) int 
 		}
 	}
 
+	for _, e := range selected {
+		if e.Rate { // two snapshots one interval apart
+			prev := element.Take(env.Sources)
+			env.sleep(interval)
+			c.SetRates(prev, element.Take(env.Sources), interval)
+			break
+		}
+	}
+
 	var failed, read int
 	firstCode := ExitOK
 	negative := false
 	for _, e := range selected {
-		name := verb + "." + e.short
-		label := verb + " " + e.short
-		v, err := e.read(c)
+		name := e.Name
+		label := verb + " " + e.Short
+		v, err := e.Read(c)
 		if err != nil {
 			failed++
 			code := reportError(stdout, stderr, asJSON, name, label, err)
@@ -175,14 +185,14 @@ func runVerb(env Env, verb string, args []string, stdout, stderr io.Writer) int 
 			continue
 		}
 		read++
-		r := reading.Reading{Name: name, Value: v, Unit: e.unit, Digits: e.digits}
+		r := reading.Reading{Name: name, Value: v, Unit: e.Unit, Digits: e.Digits}
 		switch {
 		case asJSON:
 			fmt.Fprintln(stdout, r.JSON())
 		case number:
 			fmt.Fprintln(stdout, r.Number())
 		case group:
-			fmt.Fprintf(stdout, "%s %s\n", e.short, r.String())
+			fmt.Fprintf(stdout, "%s %s\n", e.Short, r.String())
 		default:
 			fmt.Fprintln(stdout, r.String())
 		}
@@ -265,23 +275,21 @@ func runList(env Env, args []string, stdout, stderr io.Writer) int {
 	if len(pos) > 0 {
 		return usageErr(stderr, verb, fmt.Errorf("surplus argument %q", pos[0]))
 	}
-	c := &ctx{env: env, interval: time.Second}
-	defer c.closeAll()
+	c := element.NewCtx(env.Env)
+	defer c.Close()
 	type row struct {
 		name, unit string
 		err        error
 	}
 	var rows []row
-	for _, v := range verbOrder {
-		for _, e := range elementsOf(v, c) {
-			var err error
-			if e.probe != nil {
-				err = e.probe(c)
-			} else {
-				_, err = e.read(c)
-			}
-			rows = append(rows, row{v + "." + e.short, e.unit, err})
+	for _, e := range element.All(env.Sources) {
+		var err error
+		if e.Probe != nil {
+			err = e.Probe(c)
+		} else {
+			_, err = e.Read(c)
 		}
+		rows = append(rows, row{e.Name, e.Unit, err})
 	}
 	_, terr := collector.Throttled(env.Sources)
 	rows = append(rows, row{"throttle", "", terr})

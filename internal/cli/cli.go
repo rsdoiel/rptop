@@ -9,23 +9,24 @@ import (
 	"io"
 
 	"github.com/rsdoiel/rptop"
+	"github.com/rsdoiel/rptop/internal/exitcode"
 )
 
 // Exit codes, per workspace DR-0003. Only the classes rptop can produce are
 // listed; the rest of the table is unused.
 const (
-	ExitOK           = 0
-	ExitNegative     = 1
-	ExitUsage        = 2
-	ExitData         = 65
-	ExitNoInput      = 66
-	ExitUnavailable  = 69
-	ExitInternal     = 70
-	ExitCantCreate   = 73
-	ExitIO           = 74
-	ExitTempFail     = 75
-	ExitNoPermission = 77
-	ExitConfig       = 78
+	ExitOK           = exitcode.OK
+	ExitNegative     = exitcode.Negative
+	ExitUsage        = exitcode.Usage
+	ExitData         = exitcode.Data
+	ExitNoInput      = exitcode.NoInput
+	ExitUnavailable  = exitcode.Unavailable
+	ExitInternal     = exitcode.Internal
+	ExitCantCreate   = exitcode.CantCreate
+	ExitIO           = exitcode.IO
+	ExitTempFail     = exitcode.TempFail
+	ExitNoPermission = exitcode.NoPermission
+	ExitConfig       = exitcode.Config
 )
 
 const appName = "rptop"

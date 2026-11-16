@@ -1,6 +1,9 @@
 package collector
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+)
 
 /** HailoTemps holds the two on-chip temperature sensors of a Hailo device.
  *
@@ -50,4 +53,14 @@ func TempHailo(r HailoReader) (float64, error) {
 		return t.TS1, nil
 	}
 	return t.TS0, nil
+}
+
+// widen32 converts a float32 reading to float64 through its shortest decimal
+// form, so 54.616 stays 54.616 and does not become 54.61600112915039.
+func widen32(v float32) float64 {
+	f, err := strconv.ParseFloat(strconv.FormatFloat(float64(v), 'f', -1, 32), 64)
+	if err != nil {
+		return float64(v)
+	}
+	return f
 }
