@@ -34,7 +34,7 @@ About this software
 
 ## rptop 0.0.1
 
-First release. A vitals dashboard and scriptable reporter for a Raspberry Pi 5 with an optional AI HAT+ 2: a terminal dashboard (bare rptop; keys q r R m p ?; options -interval, -warn-temp, -crit-temp, -out; no configuration file), reading verbs temp, cpu, mem, fan, volts, disk, net, throttle and list with -n, -j, -above and -below and the workspace exit codes, and JSONL recording (rptop record, or r in the dashboard) with a meta line, samples, markers and a meta_end line, a free-space guard and flat element names (DR-0003). The Hailo temperature is read in process through libhailort behind the hailo build tag (HailoRT >= 5.4.0). Linux arm64 on a Raspberry Pi 5 only.
+First release. A vitals dashboard and scriptable reporter for a Raspberry Pi 5 with an optional AI HAT+ 2: a terminal dashboard (bare rptop; keys q r R m p ?; options -interval, -warn-temp, -crit-temp, -out; no configuration file), reading verbs temp, cpu, mem, fan, volts, disk, net, throttle and list with -n, -j, -above and -below and the workspace exit codes, and JSONL recording (rptop record, or r in the dashboard) with a meta line, samples, markers and a meta_end line, a free-space guard and flat element names (DR-0003). The Hailo temperature is read in process through libhailort behind the hailo build tag (HailoRT >= 5.4.0), so it comes from a source build: the release archive is built without the tag and cgo, runs on any Pi 5 without HailoRT, and reports the Hailo element absent. Linux arm64 on a Raspberry Pi 5 only.
 
 ## Authors
 

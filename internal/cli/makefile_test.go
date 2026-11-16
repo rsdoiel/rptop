@@ -165,3 +165,23 @@ func TestCheckRequirements(t *testing.T) {
 		}
 	}
 }
+
+// The release archive is built without the hailo tag and without cgo: with the
+// tag the binary needs libhailort.so.5.4.0 and will not start on a Pi without it.
+func TestReleaseArchiveHasNoHailoDependency(t *testing.T) {
+	b, err := os.ReadFile("../../Makefile")
+	if err != nil {
+		t.Fatal(err)
+	}
+	m := regexp.MustCompile(`(?m)^dist/Linux-aarch64:.*\n((?:\t.*\n)+)`).FindSubmatch(b)
+	if m == nil {
+		t.Fatal("no dist/Linux-aarch64 target")
+	}
+	recipe := string(m[1])
+	if strings.Contains(recipe, "GO_TAGS") || strings.Contains(recipe, "-tags") {
+		t.Errorf("the release archive is built with build tags:\n%s", recipe)
+	}
+	if !strings.Contains(recipe, "CGO_ENABLED=0") {
+		t.Errorf("the release archive is not built with CGO_ENABLED=0:\n%s", recipe)
+	}
+}

@@ -18,6 +18,8 @@ The first release. A vitals dashboard and scriptable reporter for a Raspberry Pi
   reading, a free-space guard of 64 MiB. The format is decision record DR-0003.
 - **The Hailo temperature,** read in process through libhailort behind the `hailo` build tag (HailoRT >= 5.4.0). On HailoRT
   5.4.0 the device is opened with `hailo_create_device_by_id`; `hailo_create_pcie_device` is Hailo-8 only.
+- **The release archive is built without the `hailo` tag and without cgo,** so it runs on any Pi 5 with no HailoRT. In it
+  `rptop temp hailo` reports the element absent; build from source for the Hailo temperature.
 - **Exit codes** from the workspace table, one class per failure: 66 for an element not on this machine, 69 for one that
   cannot be reached, 65 for text that cannot be parsed, 73 and 74 for recordings.
 - **Man pages** for `rptop` and each verb, generated from the help text.

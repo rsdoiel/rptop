@@ -17,6 +17,10 @@ curl https://rsdoiel.github.io/rptop/installer.sh | sh
 Make sure `$HOME/bin` is in your `PATH`. The archive is `rptop-vX.Y.Z-Linux-aarch64.zip`; the installer is generated and
 looks for exactly that name, so it fails with a 404 on any other system.
 
+**The release archive has no Hailo temperature.** It is built without the `hailo` build tag (and without cgo), so it needs
+no HailoRT, runs on any Raspberry Pi 5, and reports `rptop temp hailo` as absent (exit 66). Everything else works. For
+the Hailo-10H temperature, build from source on a machine with HailoRT >= 5.4.0, below.
+
 Installing from source
 ----------------------
 

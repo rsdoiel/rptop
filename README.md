@@ -41,8 +41,9 @@ Status: pre-release. Everything described here is built and tested; see [CHANGES
 
 - Go >= 1.27.3
 - A Raspberry Pi 5 running Raspberry Pi OS (64-bit), Debian 13 (trixie)
-- Optional: an AI HAT+ 2 with HailoRT >= 5.4.0 and a C compiler, for the Hailo temperature (the `hailo` build tag, enabled by
-  the Makefile when `/usr/include/hailo/hailort.h` exists). Without it `rptop temp hailo` reports the element absent.
+- Optional: an AI HAT+ 2 with HailoRT >= 5.4.0 and a C compiler, for the Hailo temperature. This needs a **build from
+  source** with the `hailo` tag, which the Makefile enables when `/usr/include/hailo/hailort.h` exists. **The release
+  archive is built without it** so that it runs on any Pi 5: there, `rptop temp hailo` reports the element absent (exit 66).
 - Optional: `vcgencmd` (the PMIC temperature, core voltage and throttling); a fan on the official active cooler for `fan`.
 
 See [INSTALL.md](INSTALL.md) for building and installing.

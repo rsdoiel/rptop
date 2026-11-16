@@ -175,9 +175,13 @@ setup_dist: .FORCE
 	@mkdir -p dist
 	@rm -fR dist/
 
+# The release archive is built without the hailo tag and without cgo, on purpose: with the
+# tag the binary needs libhailort.so.5.4.0 and does not start on a Pi that lacks it. The
+# archive runs on any Pi 5 and reports `rptop temp hailo` absent (exit 66); the Hailo
+# temperature comes from a source build, which uses the tag when HailoRT is installed.
 dist/Linux-aarch64: $(PROGRAMS)
 	@mkdir -p dist/bin
-	@for FNAME in $(PROGRAMS); do env  GOOS=linux GOARCH=arm64 go build $(GO_TAGS) -o "dist/bin/$${FNAME}" cmd/$${FNAME}/*.go; done
+	@for FNAME in $(PROGRAMS); do env CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o "dist/bin/$${FNAME}" cmd/$${FNAME}/*.go; done
 	@cd dist && zip -r $(PROJECT)-v$(VERSION)-Linux-aarch64.zip LICENSE codemeta.json CITATION.cff *.md bin/* man/* $(DOCS)
 	@rm -fR dist/bin
 
