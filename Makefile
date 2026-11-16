@@ -12,6 +12,11 @@ PROGRAMS = rptop
 
 VERBS =
 
+# The Hailo temperature needs cgo and libhailort (DR-0001). Build with the
+# hailo tag when the HailoRT header is installed; without it the element
+# reports absent (exit 66). Override with GO_TAGS= to force a plain build.
+GO_TAGS = $(shell test -f /usr/include/hailo/hailort.h && echo "-tags hailo")
+
 RELEASE_DATE = $(shell date +%Y-%m-%d)
 
 RELEASE_HASH=$(shell git log --pretty=format:'%h' -n 1)
@@ -81,7 +86,7 @@ $(MAN_PAGES_7): .FORCE
 
 $(PROGRAMS): $(PACKAGE)
 	@mkdir -p bin
-	go build -o "bin/$@$(EXT)" cmd/$@/*.go
+	go build $(GO_TAGS) -o "bin/$@$(EXT)" cmd/$@/*.go
 	@./bin/$@ -help >$@.1.md
 
 # verb-help regenerates each verb's own rptop-VERB.1.md man-page source
@@ -115,7 +120,7 @@ installer.ps1: .FORCE
 
 
 test: $(PACKAGE)
-	go test ./...
+	go test $(GO_TAGS) ./...
 
 website: clean-website .FORCE
 	make -f website.mak
@@ -173,7 +178,7 @@ setup_dist: .FORCE
 
 dist/Linux-aarch64: $(PROGRAMS)
 	@mkdir -p dist/bin
-	@for FNAME in $(PROGRAMS); do env  GOOS=linux GOARCH=arm64 go build -o "dist/bin/$${FNAME}" cmd/$${FNAME}/*.go; done
+	@for FNAME in $(PROGRAMS); do env  GOOS=linux GOARCH=arm64 go build $(GO_TAGS) -o "dist/bin/$${FNAME}" cmd/$${FNAME}/*.go; done
 	@cd dist && zip -r $(PROJECT)-v$(VERSION)-Linux-aarch64.zip LICENSE codemeta.json CITATION.cff *.md bin/* man/* $(DOCS)
 	@rm -fR dist/bin
 

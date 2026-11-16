@@ -39,7 +39,9 @@
   "softwareSuggestions": [
     "CMTools >= 0.0.46",
     "Pandoc >= 3.9",
-    "GNU Make >= 3"
+    "GNU Make >= 3",
+    "HailoRT >= 5.4.0",
+    "A C compiler (GCC or Clang) for the Hailo temperature"
   ],
   "version": "0.0.0",
   "developmentStatus": "concept",
