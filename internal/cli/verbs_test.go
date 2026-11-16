@@ -415,3 +415,13 @@ func TestHelpPagesConvertWithoutPandocWarnings(t *testing.T) {
 		}
 	}
 }
+
+// The main help page lists every verb that has a page of its own, so a verb
+// added later cannot be left out of `rptop -help` (record once was).
+func TestMainHelpListsEveryVerb(t *testing.T) {
+	for v := range verbHelp {
+		if !strings.Contains(HelpText, "\n"+v+"\n: ") {
+			t.Errorf("the main help page does not list the %q verb", v)
+		}
+	}
+}

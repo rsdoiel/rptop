@@ -13,6 +13,7 @@
   ],
   "dateCreated": "2026-10-29",
   "dateModified": "2026-11-15",
+  "datePublished": "2026-11-15",
   "description": "A vitals dashboard for a Raspberry Pi 5 with an optional AI HAT+ 2: a terminal dashboard and a verb-oriented command line over the same collectors, so each readout (CPU, memory, temperatures, throttling, fan, disk, network) is also a scriptable report of one value and its unit, with JSONL recording for comparing runs.",
   "keywords": [
     "Raspberry Pi",

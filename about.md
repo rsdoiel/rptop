@@ -26,7 +26,7 @@ keywords:
   - CLI
   - Hailo
 
-
+date_released: 2026-11-15
 ---
 
 About this software

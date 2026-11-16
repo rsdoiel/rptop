@@ -1,4 +1,4 @@
-%rptop(1) user manual | version 0.0.1 bb5682a
+%rptop(1) user manual | version 0.0.1 e50a5ea
 % R. S. Doiel
 % 2026-11-15
 
@@ -15,6 +15,8 @@ rptop [-i|-interval D] [-warn-temp C] [-crit-temp C] [-out PATH]
 rptop VERB [ELEMENT] [-n|-number] [-j|-json] [-above X] [-below X]
 
 rptop list [-j|-json]
+
+rptop record [-label TEXT] [-out PATH] [-i|-interval D] [-duration D]
 
 rptop help [VERB]
 
@@ -94,6 +96,9 @@ net
 
 throttle
 : what the firmware is throttling now and since boot
+
+record
+: record every element to a JSONL file, one file per run, until Ctrl-C or -duration
 
 list
 : every element, its unit and whether it can be read on this machine

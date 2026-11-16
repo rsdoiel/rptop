@@ -1,6 +1,6 @@
 # Changes
 
-## v0.0.1 — unreleased (first release)
+## v0.0.1 — 2026-11-15
 
 The first release. A vitals dashboard and scriptable reporter for a Raspberry Pi 5 with an optional AI HAT+ 2.
 

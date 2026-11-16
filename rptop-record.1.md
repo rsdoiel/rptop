@@ -1,4 +1,4 @@
-%rptop-record(1) user manual | version 0.0.1 bb5682a
+%rptop-record(1) user manual | version 0.0.1 e50a5ea
 % R. S. Doiel
 % 2026-11-15
 

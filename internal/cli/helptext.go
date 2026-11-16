@@ -24,6 +24,8 @@ const HelpText = `%{app_name}(1) user manual | version {version} {release_hash}
 
 {app_name} list [-j|-json]
 
+{app_name} record [-label TEXT] [-out PATH] [-i|-interval D] [-duration D]
+
 {app_name} help [VERB]
 
 # DESCRIPTION
@@ -102,6 +104,9 @@ net
 
 throttle
 : what the firmware is throttling now and since boot
+
+record
+: record every element to a JSONL file, one file per run, until Ctrl-C or -duration
 
 list
 : every element, its unit and whether it can be read on this machine
