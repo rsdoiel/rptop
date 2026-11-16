@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <title>rptop</title>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<a href="#main-content" class="visually-hidden">skip to main content</a>
+<nav>
+<ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="LICENSE">LICENSE</a></li>
+    <li><a href="INSTALL.html">INSTALL</a></li>
+    <li><a href="rptop.1.html">Manual</a></li>
+    <li><a href="CHANGES.html">CHANGES</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="https://github.com/rsdoiel/rptop">Code Repository</a></li>
+</ul>
+</nav>
+<section id="main-content">
+<h1 id="changes">Changes</h1>
+<h2 id="v0.0.1-2026-11-15">v0.0.1 — 2026-11-15</h2>
+<p>The first release. A vitals dashboard and scriptable reporter for a
+Raspberry Pi 5 with an optional AI HAT+ 2.</p>
+<h3 id="added">Added</h3>
+<ul>
+<li><strong>The dashboard,</strong> a bare <code>rptop</code> in a
+terminal: CPU and per-core load, memory, temperatures with sparklines
+coloured by <code>-warn-temp</code> and <code>-crit-temp</code>,
+throttling, fan, core voltage, disk and network throughput. Keys
+<code>q</code>, <code>r</code>, <code>R</code>, <code>m</code>,
+<code>p</code>, <code>?</code>. Options
+<code>-i</code>/<code>-interval</code>, <code>-warn-temp</code>,
+<code>-crit-temp</code> and <code>-out</code>; there is no configuration
+file. Without a terminal it prints help to standard error and exits
+2.</li>
+<li><strong>Reading verbs:</strong> <code>temp</code>, <code>cpu</code>,
+<code>mem</code>, <code>fan</code>, <code>volts</code>,
+<code>disk</code>, <code>net</code>, <code>throttle</code> and
+<code>list</code>. Each element reports one value and its unit
+(<code>-n</code> for the bare number, <code>-j</code> for JSON);
+<code>-above</code> and <code>-below</code> print the reading and answer
+with the exit code; a verb with no element reports its group under the
+bulk rule.</li>
+<li><strong>Recording:</strong> <code>rptop record</code> and the
+dashboard’s <code>r</code> key write one JSONL file per run, with a
+<code>meta</code> line, a <code>sample</code> line per interval,
+<code>marker</code> lines and a <code>meta_end</code> line on every
+ending. Flat element names, <code>null</code> for an unreadable reading,
+a free-space guard of 64 MiB. The format is decision record
+DR-0003.</li>
+<li><strong>The Hailo temperature,</strong> read in process through
+libhailort behind the <code>hailo</code> build tag (HailoRT &gt;=
+5.4.0). On HailoRT 5.4.0 the device is opened with
+<code>hailo_create_device_by_id</code>;
+<code>hailo_create_pcie_device</code> is Hailo-8 only.</li>
+<li><strong>The release archive is built without the <code>hailo</code>
+tag and without cgo,</strong> so it runs on any Pi 5 with no HailoRT. In
+it <code>rptop temp hailo</code> reports the element absent; build from
+source for the Hailo temperature.</li>
+<li><strong>Exit codes</strong> from the workspace table, one class per
+failure: 66 for an element not on this machine, 69 for one that cannot
+be reached, 65 for text that cannot be parsed, 73 and 74 for
+recordings.</li>
+<li><strong>Man pages</strong> for <code>rptop</code> and each verb,
+generated from the help text.</li>
+</ul>
+<h3 id="known-limits">Known limits</h3>
+<ul>
+<li>Linux arm64 on a Raspberry Pi 5 only.</li>
+<li>The race detector has not been run (it does not run on the Pi’s
+kernel).</li>
+<li>The DuckDB recipe in the README has not been run on the Pi.</li>
+</ul>
+</section>
+<footer>
+<p>rptop</p>
+</footer>
+</body>
+</html>

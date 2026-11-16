@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <title>rptop</title>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<a href="#main-content" class="visually-hidden">skip to main content</a>
+<nav>
+<ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="LICENSE">LICENSE</a></li>
+    <li><a href="INSTALL.html">INSTALL</a></li>
+    <li><a href="rptop.1.html">Manual</a></li>
+    <li><a href="CHANGES.html">CHANGES</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="https://github.com/rsdoiel/rptop">Code Repository</a></li>
+</ul>
+</nav>
+<section id="main-content">
+<h1 id="name">NAME</h1>
+<p>rptop — a Raspberry Pi vitals dashboard and scriptable reporter</p>
+<h1 id="synopsis">SYNOPSIS</h1>
+<p>rptop [-h|-help] [-l|-license] [-v|-version]</p>
+<p>rptop [-i|-interval D] [-warn-temp C] [-crit-temp C] [-out PATH]</p>
+<p>rptop VERB [ELEMENT] [-n|-number] [-j|-json] [-above X] [-below
+X]</p>
+<p>rptop list [-j|-json]</p>
+<p>rptop record [-label TEXT] [-out PATH] [-i|-interval D] [-duration
+D]</p>
+<p>rptop help [VERB]</p>
+<h1 id="description">DESCRIPTION</h1>
+<p>rptop reports the vitals of a Raspberry Pi 5, with an optional AI
+HAT+ 2: CPU, memory, temperatures, throttling, fan, disk and network. A
+dashboard and a verb-oriented command line read the same collectors, so
+every element on the dashboard is also a verb that reports one value and
+its unit.</p>
+<h1 id="dashboard">DASHBOARD</h1>
+<p>Run rptop with no verb in a terminal to open the dashboard: CPU and
+per-core load, memory, temperatures with sparklines, throttling, fan and
+voltage, and disk and network throughput. It needs a terminal at least
+72 columns by 20 rows; without one it prints this page to standard error
+and exits 2. There is no configuration file; these options are all of
+it.</p>
+<dl>
+<dt>-i, -interval D</dt>
+<dd>
+time between samples, a Go duration; default 1s, at least 500ms
+</dd>
+<dt>-warn-temp C</dt>
+<dd>
+temperatures at or above this are yellow; default 60
+</dd>
+<dt>-crit-temp C</dt>
+<dd>
+temperatures at or above this are red; default 80, and above -warn-temp
+</dd>
+<dt>-out PATH</dt>
+<dd>
+where recordings started with r go; a directory, made if needed; default
+the current directory
+</dd>
+</dl>
+<p>Keys:</p>
+<dl>
+<dt>q, ctrl+c</dt>
+<dd>
+quit; an open recording is ended first
+</dd>
+<dt>r</dt>
+<dd>
+start a recording, or stop the open one
+</dd>
+<dt>R</dt>
+<dd>
+ask for a label, then start a recording
+</dd>
+<dt>m</dt>
+<dd>
+ask for marker text and write it to the open recording
+</dd>
+<dt>p</dt>
+<dd>
+pause the display; sampling and recording go on
+</dd>
+<dt>?</dt>
+<dd>
+show the keys
+</dd>
+</dl>
+<p>A recording from the dashboard is the same JSONL file as rptop record
+writes; if one cannot start or has to stop, the dashboard shows a banner
+and keeps running.</p>
+<h1 id="verbs">VERBS</h1>
+<dl>
+<dt>temp</dt>
+<dd>
+temperatures in °C: soc, pmic, hailo, rp1
+</dd>
+<dt>cpu</dt>
+<dd>
+utilisation in %, frequency in MHz, load average: total, core N, freq,
+load
+</dd>
+<dt>mem</dt>
+<dd>
+memory in bytes: used, total, swap
+</dd>
+<dt>fan</dt>
+<dd>
+fan speed in rpm
+</dd>
+<dt>volts</dt>
+<dd>
+core voltage in V
+</dd>
+<dt>disk</dt>
+<dd>
+bytes per second read and written
+</dd>
+<dt>net</dt>
+<dd>
+bytes per second received and sent
+</dd>
+<dt>throttle</dt>
+<dd>
+what the firmware is throttling now and since boot
+</dd>
+<dt>record</dt>
+<dd>
+record every element to a JSONL file, one file per run, until Ctrl-C or
+-duration
+</dd>
+<dt>list</dt>
+<dd>
+every element, its unit and whether it can be read on this machine
+</dd>
+</dl>
+<p>A verb with no element reports every element of its group, one line
+each. Run rptop help VERB to read about a verb.</p>
+<h1 id="exit-status">EXIT STATUS</h1>
+<p>Exit codes follow the workspace convention (DR-0003).</p>
+<dl>
+<dt>0</dt>
+<dd>
+success
+</dd>
+<dt>1</dt>
+<dd>
+the command ran and the answer is no
+</dd>
+<dt>2</dt>
+<dd>
+the command line is wrong; nothing was attempted
+</dd>
+<dt>65</dt>
+<dd>
+content the tool reads is wrong
+</dd>
+<dt>66</dt>
+<dd>
+a named input, or a sensor on this machine, is missing
+</dd>
+<dt>69</dt>
+<dd>
+a service the command needs cannot be reached
+</dd>
+<dt>70</dt>
+<dd>
+internal error
+</dd>
+<dt>73</dt>
+<dd>
+an output cannot be created
+</dd>
+<dt>74</dt>
+<dd>
+a read or write failed part way
+</dd>
+<dt>75</dt>
+<dd>
+retrying later may succeed
+</dd>
+<dt>77</dt>
+<dd>
+the operating system refused access
+</dd>
+<dt>78</dt>
+<dd>
+a configuration file is present but wrong
+</dd>
+</dl>
+</section>
+<footer>
+<p>rptop</p>
+</footer>
+</body>
+</html>

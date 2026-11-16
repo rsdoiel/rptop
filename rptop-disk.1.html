@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <title>rptop</title>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<a href="#main-content" class="visually-hidden">skip to main content</a>
+<nav>
+<ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="LICENSE">LICENSE</a></li>
+    <li><a href="INSTALL.html">INSTALL</a></li>
+    <li><a href="rptop.1.html">Manual</a></li>
+    <li><a href="CHANGES.html">CHANGES</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="https://github.com/rsdoiel/rptop">Code Repository</a></li>
+</ul>
+</nav>
+<section id="main-content">
+<h1 id="name">NAME</h1>
+<p>rptop-disk — disk throughput in bytes per second, summed over the
+whole physical disks.</p>
+<h1 id="synopsis">SYNOPSIS</h1>
+<p>rptop disk [read|write] [-interval D] [-n] [-j] [-above X] [-below
+X]</p>
+<h1 id="description">DESCRIPTION</h1>
+<p>Disk throughput in bytes per second, summed over the whole physical
+disks.</p>
+<h2 id="elements">Elements</h2>
+<dl>
+<dt>read</dt>
+<dd>
+bytes read per second
+</dd>
+<dt>write</dt>
+<dd>
+bytes written per second
+</dd>
+</dl>
+<h1 id="options">OPTIONS</h1>
+<dl>
+<dt>-h, -help</dt>
+<dd>
+display help
+</dd>
+<dt>-n, -number</dt>
+<dd>
+print the bare number, without its unit
+</dd>
+<dt>-j, -json</dt>
+<dd>
+print JSON, for example {“name”:“temp.soc”,“value”:54.6,“unit”:“°C”}; a
+failure is also an error object with its class and code
+</dd>
+<dt>-above X</dt>
+<dd>
+exit 1 unless the reading is above X; the reading is still printed
+</dd>
+<dt>-below X</dt>
+<dd>
+exit 1 unless the reading is below X; the reading is still printed
+</dd>
+<dt>-i, -interval D</dt>
+<dd>
+time between the two samples, a Go duration; default 1s
+</dd>
+</dl>
+<p>Partitions, ram, loop and zram devices are not counted. Throughput is
+the difference between two samples of /proc/diskstats.</p>
+<h1 id="exit-status">EXIT STATUS</h1>
+<dl>
+<dt>0</dt>
+<dd>
+the reading was printed and every given condition holds
+</dd>
+<dt>1</dt>
+<dd>
+the reading was printed and -above or -below does not hold, or throttle
+reports something active
+</dd>
+<dt>2</dt>
+<dd>
+the command line is wrong: unknown element or option, surplus or missing
+argument, a value that is not a number; nothing was read
+</dd>
+<dt>65</dt>
+<dd>
+a sensor’s text could not be parsed
+</dd>
+<dt>66</dt>
+<dd>
+the element is not present on this machine (no such sensor, no vcgencmd,
+built without the hailo tag, no Hailo device)
+</dd>
+<dt>69</dt>
+<dd>
+the element is present but cannot be reached (the Hailo device cannot be
+opened or read)
+</dd>
+<dt>70</dt>
+<dd>
+internal error
+</dd>
+<dt>77</dt>
+<dd>
+the operating system refused access to a sensor
+</dd>
+</dl>
+<p>With no element, every element of the group is reported. Elements
+that cannot be read are reported on standard error and the rest are
+still printed; the exit code is the class of the first failure in the
+order shown above, and the counts are printed.</p>
+<h1 id="examples">EXAMPLES</h1>
+<pre class="shell"><code>rptop disk write -i 5s</code></pre>
+</section>
+<footer>
+<p>rptop</p>
+</footer>
+</body>
+</html>

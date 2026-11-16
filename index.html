@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <title>rptop</title>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<a href="#main-content" class="visually-hidden">skip to main content</a>
+<nav>
+<ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="LICENSE">LICENSE</a></li>
+    <li><a href="INSTALL.html">INSTALL</a></li>
+    <li><a href="rptop.1.html">Manual</a></li>
+    <li><a href="CHANGES.html">CHANGES</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="https://github.com/rsdoiel/rptop">Code Repository</a></li>
+</ul>
+</nav>
+<section id="main-content">
+<h1 id="rptop">rptop</h1>
+<p>A vitals dashboard and scriptable reporter for a Raspberry Pi 5, with
+an optional AI HAT+ 2 (Hailo-10H).</p>
+<p>rptop has three faces over one set of collectors:</p>
+<ul>
+<li><strong>a terminal dashboard</strong> (a bare <code>rptop</code>):
+CPU and per-core load, memory, temperatures with sparklines, throttling,
+fan, core voltage, disk and network throughput;</li>
+<li><strong>a verb-oriented command line</strong>
+(<code>rptop temp soc</code>, <code>rptop fan</code>,
+<code>rptop throttle</code>): each element reports one value and its
+unit, so every readout works in shell scripts, cron and systemd;</li>
+<li><strong>a recorder</strong> (<code>rptop record</code>, or
+<code>r</code> in the dashboard): one JSONL file per run, to compare the
+machine before and after a change.</li>
+</ul>
+<p>It is specific to the Raspberry Pi 5 on Debian 13 (trixie) and is not
+cross-platform. There is no daemon and no configuration file.</p>
+<p>Status: pre-release. Everything described here is built and tested;
+see <a href="CHANGES.html">CHANGES.md</a>.</p>
+<pre class="text"><code>┌ rptop ─ harvey ─ rec ● rptop-20261115-143012.jsonl 12 samples 0:20 ──────────┐
+│ CPU  [██████░░░░░░░░░░]  37.0%  2400 MHz  load 0.90                          │
+│   c0 [█░░░]  31.0% c1 [██░░]  45.1% c2 [█░░░]  22.4% c3 [██░░]  54.3%        │
+│      ▁▂▂▃▃▄▄▅▅▆▆▇▇█▁▂▂▃▄▄                                                    │
+│ MEM  [██░░░░░░░░░░░░░░] 2.1G / 15.8G  swap 0 B                               │
+├ Temperatures ────────────────────────────────────────────────────────────────┤
+│ SoC     59.0 °C  ▁▂▃▃▄▅▆▆▇█▁▂▃▃▄▅▆▆▇█                                        │
+│ PMIC    49.2 °C  ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁                                        │
+│ Hailo   68.3 °C  ▁▁▂▂▂▃▃▄▄▄▅▅▅▆▆▇▇▇██                                        │
+│ RP1     51.4 °C  ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁                                        │
+├ Power / Health ──────────────────────────────────────────────────────────────┤
+│ Throttle  now: none                                                          │
+│ since boot: arm frequency capped, throttled, soft temperature limit          │
+│ Fan  3725 rpm     Core  0.7838 V                                             │
+├ Disk / Net ──────────────────────────────────────────────────────────────────┤
+│ Disk  read 12.0 MB/s   write 3.0 MB/s                                        │
+│ Net   rx 1.2 MB/s   tx 102.4 KB/s                                            │
+└ q quit  r record  R label  m marker  p pause  ? help ────────────────────────┘</code></pre>
+<h2 id="requirements">Requirements</h2>
+<ul>
+<li>Go &gt;= 1.27.3</li>
+<li>A Raspberry Pi 5 running Raspberry Pi OS (64-bit), Debian 13
+(trixie)</li>
+<li>Optional: an AI HAT+ 2 with HailoRT &gt;= 5.4.0 and a C compiler,
+for the Hailo temperature. This needs a <strong>build from
+source</strong> with the <code>hailo</code> tag, which the Makefile
+enables when <code>/usr/include/hailo/hailort.h</code> exists.
+<strong>The release archive is built without it</strong> so that it runs
+on any Pi 5: there, <code>rptop temp hailo</code> reports the element
+absent (exit 66).</li>
+<li>Optional: <code>vcgencmd</code> (the PMIC temperature, core voltage
+and throttling); a fan on the official active cooler for
+<code>fan</code>.</li>
+</ul>
+<p>See <a href="INSTALL.html">INSTALL.md</a> for building and
+installing.</p>
+<h2 id="the-dashboard">The dashboard</h2>
+<p>Run <code>rptop</code> in a terminal at least 72 columns by 20 rows.
+Without a terminal (a pipe, a redirect, cron) it prints the help page to
+standard error and exits 2.</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th scope="col">Option</th>
+<th scope="col">Default</th>
+<th scope="col">Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>-i</code>, <code>-interval D</code></td>
+<td><code>1s</code></td>
+<td>time between samples (a Go duration, at least
+<code>500ms</code>)</td>
+</tr>
+<tr class="even">
+<td><code>-warn-temp C</code></td>
+<td><code>60</code></td>
+<td>temperatures at or above this are yellow</td>
+</tr>
+<tr class="odd">
+<td><code>-crit-temp C</code></td>
+<td><code>80</code></td>
+<td>temperatures at or above this are red (and above
+<code>-warn-temp</code>)</td>
+</tr>
+<tr class="even">
+<td><code>-out PATH</code></td>
+<td><code>.</code></td>
+<td>where recordings started with <code>r</code> go</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr class="header">
+<th scope="col">Key</th>
+<th scope="col">Action</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>q</code>, <code>ctrl+c</code></td>
+<td>quit; an open recording is ended first</td>
+</tr>
+<tr class="even">
+<td><code>r</code></td>
+<td>start a recording, or stop the open one</td>
+</tr>
+<tr class="odd">
+<td><code>R</code></td>
+<td>ask for a label, then start a recording</td>
+</tr>
+<tr class="even">
+<td><code>m</code></td>
+<td>ask for marker text and write it into the recording</td>
+</tr>
+<tr class="odd">
+<td><code>p</code></td>
+<td>pause the display (sampling and recording go on)</td>
+</tr>
+<tr class="even">
+<td><code>?</code></td>
+<td>show the keys</td>
+</tr>
+</tbody>
+</table>
+<p>A reading that cannot be taken shows <code>n/a</code>, never
+<code>0</code>. If a recording cannot start or has to stop (the file
+exists, the disk is nearly full) the dashboard shows a banner and keeps
+running.</p>
+<h2 id="reading-one-value">Reading one value</h2>
+<p><code>rptop VERB [ELEMENT]</code> prints one reading and its unit;
+with no element it prints the whole group.</p>
+<pre class="shell"><code>rptop temp soc            # 54.6 °C
+rptop temp                # soc, pmic, hailo, rp1, one line each
+rptop cpu core 2          # 22.4 %      (named cpu.core2 in output)
+rptop fan -n              # 3725        (the bare number)
+rptop volts core -j       # {&quot;name&quot;:&quot;volts.core&quot;,&quot;value&quot;:0.7838,&quot;unit&quot;:&quot;V&quot;}
+rptop throttle            # now: none / since boot: arm frequency capped, ...
+rptop list                # every element, its unit, and whether it can be read here</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th scope="col">Verb</th>
+<th scope="col">Elements</th>
+<th scope="col">Unit</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>temp</code></td>
+<td><code>soc</code>, <code>pmic</code>, <code>hailo</code>,
+<code>rp1</code></td>
+<td>°C</td>
+</tr>
+<tr class="even">
+<td><code>cpu</code></td>
+<td><code>total</code>, <code>core N</code>, <code>freq</code>,
+<code>load</code></td>
+<td>%, MHz, load average</td>
+</tr>
+<tr class="odd">
+<td><code>mem</code></td>
+<td><code>used</code>, <code>total</code>, <code>swap</code></td>
+<td>bytes</td>
+</tr>
+<tr class="even">
+<td><code>fan</code></td>
+<td><code>speed</code></td>
+<td>rpm</td>
+</tr>
+<tr class="odd">
+<td><code>volts</code></td>
+<td><code>core</code></td>
+<td>V</td>
+</tr>
+<tr class="even">
+<td><code>disk</code></td>
+<td><code>read</code>, <code>write</code></td>
+<td>bytes per second</td>
+</tr>
+<tr class="odd">
+<td><code>net</code></td>
+<td><code>rx</code>, <code>tx</code></td>
+<td>bytes per second</td>
+</tr>
+<tr class="even">
+<td><code>throttle</code></td>
+<td>flags now and since boot</td>
+<td>none</td>
+</tr>
+</tbody>
+</table>
+<p><code>cpu</code>, <code>disk</code> and <code>net</code> compare two
+samples and take <code>-i</code>/<code>-interval</code> (default
+<code>1s</code>).</p>
+<p>A threshold check prints the reading and answers with the exit code,
+so one call can both log and gate:</p>
+<pre class="shell"><code>if rptop temp soc -above 70; then echo &quot;SoC is above 70 °C&quot;; fi
+rptop fan -below 1000 &amp;&amp; echo &quot;fan is slow&quot;</code></pre>
+<p><code>-above X</code> and <code>-below X</code> exit 0 when every
+given condition holds and 1 when one does not. <code>throttle</code>
+exits 1 only when something is active <strong>now</strong>;
+<code>-since-boot</code> lets the history decide instead.</p>
+<p>Run <code>rptop help VERB</code> or <code>man rptop-VERB</code> for
+each verb.</p>
+<h2 id="recording">Recording</h2>
+<pre class="shell"><code>rptop record -label before-ollama -duration 10m      # prints the file&#39;s path when it is done
+f=$(rptop record -duration 60s -out runs/)           # runs/ is made if it does not exist
+rptop record -i 500ms                                # until Ctrl-C or SIGTERM</code></pre>
+<p>Each run is one file, <code>rptop-YYYYMMDD-HHMMSS.jsonl</code> (UTC)
+unless <code>-out</code> names a file. An existing file is never
+appended to or overwritten (exit 73). Every line has a
+<code>type</code>:</p>
+<ul>
+<li><code>meta</code>: the first line: host, kernel, rptop version, the
+interval and every element with its unit and whether it was readable
+when the run began;</li>
+<li><code>sample</code>: one per interval, with the element names as
+keys (<code>"temp.soc":54.1</code>); an unreadable reading is
+<code>null</code>;</li>
+<li><code>marker</code>: a note written from the dashboard’s
+<code>m</code> key;</li>
+<li><code>meta_end</code>: the last line, whatever ended the run
+(<code>interrupt</code>, <code>duration</code>, <code>stopped</code>,
+<code>low_space</code>, <code>write_error</code>) with
+<code>clean</code> true or false. <strong>A file without it was cut
+short by a crash or power loss.</strong></li>
+</ul>
+<p>Below 64 MiB of free space the run ends with <code>low_space</code>
+and the command exits 74. The format is decision record DR-0003 in this
+workspace’s <code>agents/projects/rptop/decisions/</code>.</p>
+<h3 id="jq">jq</h3>
+<pre class="shell"><code># mean CPU use over a run
+jq -s &#39;[.[]|select(.type==&quot;sample&quot;)|.[&quot;cpu.total&quot;]]|add/length&#39; run.jsonl
+
+# peak SoC and Hailo temperature for each label across several runs
+jq -s &#39;[.[]|select(.type==&quot;sample&quot;)] | group_by(.label)
+       | map({label: .[0].label, samples: length,
+              peak_soc: (map(.[&quot;temp.soc&quot;])|max),
+              peak_hailo: (map(.[&quot;temp.hailo&quot;]|select(.!=null))|max)})&#39; rptop-*.jsonl
+
+# was every file finished cleanly?
+for f in rptop-*.jsonl; do tail -1 &quot;$f&quot; | jq -e &#39;.type==&quot;meta_end&quot; and .clean&#39; &gt;/dev/null || echo &quot;$f incomplete&quot;; done
+
+# the markers
+jq -c &#39;select(.type==&quot;marker&quot;)&#39; run.jsonl
+
+# a CSV of time, SoC temperature and CPU use
+jq -r &#39;select(.type==&quot;sample&quot;)|[.ts,.[&quot;temp.soc&quot;],.[&quot;cpu.total&quot;]]|@csv&#39; run.jsonl</code></pre>
+<h3 id="duckdb">DuckDB</h3>
+<p>Flat names make each element a column. This recipe has not been run
+on the Pi, where DuckDB is not installed.</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode sql"><code class="sourceCode sql"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> <span class="kw">label</span>, <span class="fu">avg</span>(<span class="ot">&quot;cpu.total&quot;</span>) <span class="kw">AS</span> cpu_mean, <span class="fu">max</span>(<span class="ot">&quot;temp.soc&quot;</span>) <span class="kw">AS</span> soc_peak, <span class="fu">max</span>(<span class="ot">&quot;temp.hailo&quot;</span>) <span class="kw">AS</span> hailo_peak</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> read_json_auto(<span class="st">&#39;rptop-*.jsonl&#39;</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> <span class="kw">type</span> <span class="op">=</span> <span class="st">&#39;sample&#39;</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="kw">GROUP</span> <span class="kw">BY</span> <span class="kw">label</span>;</span></code></pre></div>
+<p><code>self.cpu</code> and <code>self.rss</code> in every sample are
+rptop’s own cost, so you can subtract it when comparing runs.</p>
+<h2 id="exit-status">Exit status</h2>
+<p>rptop uses the workspace exit codes.</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th scope="col">Code</th>
+<th scope="col">Class</th>
+<th scope="col">When</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>ok</td>
+<td>a reading was printed and every condition holds; a recording ended
+normally; help, version</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>negative</td>
+<td><code>-above</code> or <code>-below</code> does not hold;
+<code>throttle</code> reports something active now</td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>usage</td>
+<td>a bad option, element or value; a bare <code>rptop</code> without a
+terminal</td>
+</tr>
+<tr class="even">
+<td>65</td>
+<td>data</td>
+<td>a sensor’s text could not be parsed</td>
+</tr>
+<tr class="odd">
+<td>66</td>
+<td>no input</td>
+<td>the element is not present on this machine</td>
+</tr>
+<tr class="even">
+<td>69</td>
+<td>unavailable</td>
+<td>the element is present but cannot be reached (the Hailo device)</td>
+</tr>
+<tr class="odd">
+<td>70</td>
+<td>internal</td>
+<td>a bug</td>
+</tr>
+<tr class="even">
+<td>73</td>
+<td>cant create</td>
+<td>the recording file exists, or its directory cannot be made</td>
+</tr>
+<tr class="odd">
+<td>74</td>
+<td>io</td>
+<td>a write failed, or free space fell below the guard</td>
+</tr>
+<tr class="even">
+<td>77</td>
+<td>no permission</td>
+<td>the operating system refused access</td>
+</tr>
+</tbody>
+</table>
+<p>With no element, a verb prints every element it can read, reports the
+others on standard error, and exits with the class of the first failure.
+In <code>-j</code> mode a failure is also an object on standard output,
+<code>{"error": "...", "class": "no_input", "code": 66}</code>.</p>
+<h2 id="build-and-test">Build and test</h2>
+<pre class="shell"><code>make build      # bin/rptop and the man pages
+make test</code></pre>
+<h2 id="license">License</h2>
+<p>AGPL-3.0. See <a href="LICENSE">LICENSE</a>.</p>
+</section>
+<footer>
+<p>rptop</p>
+</footer>
+</body>
+</html>

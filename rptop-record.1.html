@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <title>rptop</title>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<a href="#main-content" class="visually-hidden">skip to main content</a>
+<nav>
+<ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="LICENSE">LICENSE</a></li>
+    <li><a href="INSTALL.html">INSTALL</a></li>
+    <li><a href="rptop.1.html">Manual</a></li>
+    <li><a href="CHANGES.html">CHANGES</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="https://github.com/rsdoiel/rptop">Code Repository</a></li>
+</ul>
+</nav>
+<section id="main-content">
+<h1 id="name">NAME</h1>
+<p>rptop-record — record every element to a JSONL file until
+interrupted, in the foreground.</p>
+<h1 id="synopsis">SYNOPSIS</h1>
+<p>rptop record [-label TEXT] [-out PATH] [-interval D] [-duration
+D]</p>
+<h1 id="description">DESCRIPTION</h1>
+<p>Record every element to a JSONL file until interrupted, in the
+foreground.</p>
+<h1 id="options">OPTIONS</h1>
+<dl>
+<dt>-h, -help</dt>
+<dd>
+display help
+</dd>
+<dt>-label TEXT</dt>
+<dd>
+a name for the run, stored on every line; use it to compare runs
+</dd>
+<dt>-out PATH</dt>
+<dd>
+a file, or an existing directory; the default is
+rptop-YYYYMMDD-HHMMSS.jsonl (UTC) in the current directory. A directory
+that does not exist is made. An existing file is never appended to or
+overwritten
+</dd>
+<dt>-i, -interval D</dt>
+<dd>
+time between samples, a Go duration; default 1s, at least 500ms
+</dd>
+<dt>-duration D</dt>
+<dd>
+stop after this long; default until Ctrl-C or SIGTERM
+</dd>
+</dl>
+<p>Each run is one file: a meta line, one sample line per interval, and
+a meta_end line that is the last line whatever ended the run. A file
+with no meta_end was cut short by a crash or power loss. Keys are the
+element names of rptop list, a reading that cannot be taken is null, and
+the units are in the meta line. The first sample is written one interval
+after the start. If free space falls below 64 MiB the run ends with
+reason low_space and the command exits 74. The path of the finished file
+is printed on standard output; progress goes to standard error. See
+DR-0003 for the format.</p>
+<h1 id="exit-status">EXIT STATUS</h1>
+<dl>
+<dt>0</dt>
+<dd>
+the run ended on Ctrl-C, SIGTERM or -duration, and meta_end was written
+</dd>
+<dt>2</dt>
+<dd>
+the command line is wrong: -interval below 500ms or not positive, a
+negative -duration, a surplus argument
+</dd>
+<dt>73</dt>
+<dd>
+the file already exists, or its directory cannot be made
+</dd>
+<dt>74</dt>
+<dd>
+a write failed, or free space fell below the guard; the run ended with
+meta_end where it could
+</dd>
+<dt>77</dt>
+<dd>
+the operating system refused access to the output
+</dd>
+</dl>
+<h1 id="examples">EXAMPLES</h1>
+<pre class="shell"><code>rptop record -label before-ollama -duration 10m
+
+f=$(rptop record -duration 60s -out runs/) &amp;&amp; jq -s &#39;map(.[&quot;temp.soc&quot;]) | max&#39; &quot;$f&quot;</code></pre>
+</section>
+<footer>
+<p>rptop</p>
+</footer>
+</body>
+</html>

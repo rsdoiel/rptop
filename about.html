@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <title>rptop</title>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<a href="#main-content" class="visually-hidden">skip to main content</a>
+<nav>
+<ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="LICENSE">LICENSE</a></li>
+    <li><a href="INSTALL.html">INSTALL</a></li>
+    <li><a href="rptop.1.html">Manual</a></li>
+    <li><a href="CHANGES.html">CHANGES</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="https://github.com/rsdoiel/rptop">Code Repository</a></li>
+</ul>
+</nav>
+<section id="main-content">
+<h1 id="about-this-software">About this software</h1>
+<h2 id="rptop-0.0.1">rptop 0.0.1</h2>
+<p>First release. A vitals dashboard and scriptable reporter for a
+Raspberry Pi 5 with an optional AI HAT+ 2: a terminal dashboard (bare
+rptop; keys q r R m p ?; options -interval, -warn-temp, -crit-temp,
+-out; no configuration file), reading verbs temp, cpu, mem, fan, volts,
+disk, net, throttle and list with -n, -j, -above and -below and the
+workspace exit codes, and JSONL recording (rptop record, or r in the
+dashboard) with a meta line, samples, markers and a meta_end line, a
+free-space guard and flat element names (DR-0003). The Hailo temperature
+is read in process through libhailort behind the hailo build tag
+(HailoRT &gt;= 5.4.0), so it comes from a source build: the release
+archive is built without the tag and cgo, runs on any Pi 5 without
+HailoRT, and reports the Hailo element absent. Linux arm64 on a
+Raspberry Pi 5 only.</p>
+<h2 id="authors">Authors</h2>
+<ul>
+<li><a href="https://orcid.org/0000-0003-0900-6903">R. S. Doiel</a></li>
+</ul>
+<p>A vitals dashboard for a Raspberry Pi 5 with an optional AI HAT+ 2: a
+terminal dashboard and a verb-oriented command line over the same
+collectors, so each readout (CPU, memory, temperatures, throttling, fan,
+disk, network) is also a scriptable report of one value and its unit,
+with JSONL recording for comparing runs.</p>
+<ul>
+<li><a href="https://www.gnu.org/licenses/agpl-3.0.txt">License</a></li>
+<li><a href="https://github.com/rsdoiel/rptop">Code Repository</a>
+<ul>
+<li><a href="https://github.com/rsdoiel/rptop/issues">Issue
+Tracker</a></li>
+</ul></li>
+</ul>
+<h2 id="programming-languages">Programming languages</h2>
+<ul>
+<li>Go &gt;= 1.27.3</li>
+</ul>
+<h2 id="operating-systems">Operating Systems</h2>
+<ul>
+<li>Raspberry Pi OS (64-bit, Debian 13 trixie)</li>
+</ul>
+<h2 id="software-requirements">Software Requirements</h2>
+<ul>
+<li>Go &gt;= 1.27.3</li>
+<li>charm.land/bubbletea/v2 &gt;= 2.1.0</li>
+<li>charm.land/bubbles/v2 &gt;= 2.2.1</li>
+<li>charm.land/lipgloss/v2 &gt;= 2.0.6</li>
+<li>github.com/charmbracelet/x/ansi &gt;= 0.11.9</li>
+<li>github.com/charmbracelet/x/term &gt;= 0.2.2</li>
+</ul>
+<h2 id="software-suggestions">Software Suggestions</h2>
+<ul>
+<li>CMTools &gt;= 0.0.46</li>
+<li>Pandoc &gt;= 3.1.11</li>
+<li>GNU Make &gt;= 3</li>
+<li>vcgencmd (libraspberrypi-bin), for the PMIC temperature, the core
+voltage and throttling</li>
+<li>HailoRT &gt;= 5.4.0</li>
+<li>A C compiler (GCC or Clang) for the Hailo temperature</li>
+<li>jq, zip and the GitHub CLI (gh), to run make check-release, make
+release and release.bash</li>
+</ul>
+</section>
+<footer>
+<p>rptop</p>
+</footer>
+</body>
+</html>

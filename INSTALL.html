@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <title>rptop</title>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<a href="#main-content" class="visually-hidden">skip to main content</a>
+<nav>
+<ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="LICENSE">LICENSE</a></li>
+    <li><a href="INSTALL.html">INSTALL</a></li>
+    <li><a href="rptop.1.html">Manual</a></li>
+    <li><a href="CHANGES.html">CHANGES</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="https://github.com/rsdoiel/rptop">Code Repository</a></li>
+</ul>
+</nav>
+<section id="main-content">
+<h1 id="installation-rptop">Installation <strong>rptop</strong></h1>
+<p><strong>rptop</strong> is a vitals dashboard and scriptable reporter
+for a Raspberry Pi 5, with an optional AI HAT+ 2. It runs on a Raspberry
+Pi 5 with Raspberry Pi OS (64-bit), Debian 13 (trixie), and nowhere
+else: a release is source, or source and a Linux arm64 binary. There are
+no macOS or Windows builds.</p>
+<h2 id="quick-install-with-curl">Quick install with curl</h2>
+<p>On the Pi, the installer downloads the Linux arm64 archive of the
+latest release and puts <code>rptop</code> in
+<code>$HOME/bin</code>:</p>
+<pre class="shell"><code>curl https://rsdoiel.github.io/rptop/installer.sh | sh</code></pre>
+<p>Make sure <code>$HOME/bin</code> is in your <code>PATH</code>. The
+archive is <code>rptop-vX.Y.Z-Linux-aarch64.zip</code>; the installer is
+generated and looks for exactly that name, so it fails with a 404 on any
+other system.</p>
+<p><strong>The release archive has no Hailo temperature.</strong> It is
+built without the <code>hailo</code> build tag (and without cgo), so it
+needs no HailoRT, runs on any Raspberry Pi 5, and reports
+<code>rptop temp hailo</code> as absent (exit 66). Everything else
+works. For the Hailo-10H temperature, build from source on a machine
+with HailoRT &gt;= 5.4.0, below.</p>
+<h2 id="installing-from-source">Installing from source</h2>
+<h3 id="required-software">Required software</h3>
+<ul>
+<li>Go &gt;= 1.27.3</li>
+<li>GNU Make &gt;= 3</li>
+<li>Pandoc &gt;= 3.1.11, to build the man pages (optional;
+<code>make install</code> skips pages that were not built)</li>
+<li>For the Hailo temperature (optional): HailoRT &gt;= 5.4.0 with its
+headers (<code>/usr/include/hailo/hailort.h</code>) and a C
+compiler</li>
+</ul>
+<p>The Makefile builds with the <code>hailo</code> tag when it finds
+<code>/usr/include/hailo/hailort.h</code>, and without it otherwise.
+Without the tag nothing needs libhailort and
+<code>rptop temp hailo</code> reports the element absent (exit 66).
+Force a plain build with <code>make GO_TAGS=</code>.</p>
+<h3 id="steps">Steps</h3>
+<ol type="1">
+<li>git clone https://github.com/rsdoiel/rptop</li>
+<li>Change directory into the <code>rptop</code> directory</li>
+<li>Make to build, test and install</li>
+</ol>
+<pre class="shell"><code>git clone https://github.com/rsdoiel/rptop
+cd rptop
+make
+make test
+make install</code></pre>
+<p><code>make install</code> puts <code>rptop</code> in
+<code>$HOME/bin</code> and the man pages in <code>$HOME/man/man1</code>
+(<code>rptop.1</code> and one <code>rptop-VERB.1</code> for each verb).
+Use <code>make install prefix=/usr/local</code> for another place, and
+make sure <code>bin</code> is on your <code>PATH</code> and
+<code>man</code> on your <code>MANPATH</code>.
+<code>make uninstall</code> removes them.</p>
+<h3 id="check-it-works">Check it works</h3>
+<pre class="shell"><code>rptop -version
+rptop list          # every element, and whether this machine can read it
+rptop temp soc
+rptop               # the dashboard, in a terminal at least 72 columns by 20 rows</code></pre>
+<p><code>rptop list</code> shows <code>no_input</code> for an element
+this machine does not have (no fan, no Hailo device, built without the
+tag) and <code>unavailable</code> for one that is present but cannot be
+reached.</p>
+<h2 id="notes">Notes</h2>
+<ul>
+<li><strong>No daemon, no configuration file, no network.</strong> rptop
+reads <code>/sys</code>, <code>/proc</code>, <code>vcgencmd</code> and,
+with the tag, the Hailo device through libhailort, and writes only the
+recordings you ask for.</li>
+<li><strong>Reading the Hailo temperature opens the device.</strong> It
+shares the device with hailo-ollama; a handle held open by rptop was
+tested beside a running inference on HailoRT 5.4.0 without a
+problem.</li>
+<li><strong><code>vcgencmd</code></strong> is in the
+<code>libraspberrypi-bin</code> package on Raspberry Pi OS. Without it
+the PMIC temperature, the core voltage and <code>throttle</code> report
+the element absent.</li>
+</ul>
+</section>
+<footer>
+<p>rptop</p>
+</footer>
+</body>
+</html>
