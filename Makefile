@@ -64,10 +64,13 @@ endif
 # hash change only when that is asked for (the release target does).
 build: $(PROGRAMS) verb-help man
 
-# generate runs cmt over codemeta.json. Run it when the version, the release
-# notes or the metadata change, and before a release; a plain `make` leaves
-# the committed version.go, about.md and friends alone.
+# generate runs cmt over codemeta.json and rebuilds the man page sources, which carry the
+# version and the release hash. It is the only target that changes versions or stamps a
+# hash. Run it when the version, the release notes or the metadata change, then commit
+# what it changed and push: `make check-release` wants everything committed, and
+# `make release` does not generate. A plain `make` leaves the generated files alone.
 generate: version.go CITATION.cff about.md installer.sh
+	@$(MAKE) --no-print-directory verb-help
 
 version.go: .FORCE
 	cmt codemeta.json version.go
@@ -248,9 +251,53 @@ check-requirements: .FORCE
 	if [ -n "$$PROBS" ]; then printf '%s\n' "$$PROBS" | sed 's/^/check-requirements: /'; exit 1; fi; \
 	echo "check-requirements: softwareRequirements and go.mod are consistent"
 
-# check-release reads the files a release is cut from and fails when they
-# disagree; it writes nothing. Run it before `make release` (the release target
-# runs it too, after generate). It fails when
+# check-clean fails when anything is uncommitted (a modified or an untracked file that
+# is not ignored): dist and the zips must be built at a known commit. It writes nothing.
+check-clean: .FORCE
+	@DIRTY="$$(git status --porcelain)"; \
+	if [ -n "$$DIRTY" ]; then \
+		echo "check-clean: uncommitted changes; commit them so dist is built at a known commit:"; \
+		printf '%s\n' "$$DIRTY" | sed 's/^/  /'; \
+		exit 1; \
+	fi; \
+	echo "check-clean: everything is committed"
+
+# check-pushed fails when HEAD is not the head of its branch on origin. The release tag
+# is made by GitHub at the head of the branch, so it must be the commit the zips were
+# built from. It needs the network and writes nothing.
+check-pushed: .FORCE
+	@H="$$(git rev-parse HEAD)"; B="$(BRANCH)"; \
+	R="$$(git ls-remote origin "refs/heads/$$B" 2>/dev/null | cut -f1)"; \
+	[ -n "$$R" ] || { echo "check-pushed: cannot find $$B on origin"; exit 1; }; \
+	if [ "$$R" != "$$H" ]; then \
+		echo "check-pushed: HEAD $$(git rev-parse --short HEAD) is not on origin/$$B ($$(echo $$R | cut -c1-7)): push first; the release tag lands on origin's head"; \
+		exit 1; \
+	fi; \
+	echo "check-pushed: HEAD is origin/$$B"
+
+# check-generated fails when the generated files were not made from this history:
+# version.go's ReleaseHash must be a commit in it, and rptop.1.md, built from the
+# program's own help, must carry that version and hash (so `make generate` was run, and
+# its result committed, after the last change to codemeta.json). It writes nothing.
+check-generated: .FORCE
+	@FAIL=0; V="$(VERSION)"; \
+	bad() { echo "check-generated: $$1"; FAIL=1; }; \
+	GOH="$$(sed -n 's/^ *ReleaseHash = "\(.*\)".*/\1/p' version.go | head -1)"; \
+	if [ -z "$$GOH" ]; then bad "version.go has no ReleaseHash (run make generate)"; \
+	elif ! git merge-base --is-ancestor "$$GOH" HEAD 2>/dev/null; then bad "version.go's ReleaseHash $$GOH is not in this history (run make generate, commit and push)"; fi; \
+	case "$$(head -1 rptop.1.md)" in \
+		*"version $$V $$GOH"*) ;; \
+		*) bad "rptop.1.md was not built with this version.go ($$V $$GOH): run make generate and commit";; \
+	esac; \
+	if [ $$FAIL -ne 0 ]; then exit 1; fi; \
+	echo "check-generated: generated files match $$V $$GOH"
+
+# check-release says whether the repository is ready to release; it writes nothing. The
+# order of a release is: edit codemeta.json, `make generate`, commit and push, `make
+# check-release`, then `make release` (which runs this first and builds at that commit),
+# `./release.bash --dry-run`, `./release.bash`. It fails when
+#   - anything is uncommitted, or HEAD is not on origin (check-clean, check-pushed),
+#   - the generated files are not from this history (check-generated),
 #   - version.go, CITATION.cff or an installer carries a version other than codemeta.json's,
 #     or CITATION.cff's date-released is not datePublished (run `make generate`),
 #   - datePublished is not today's date, the release day,
@@ -286,11 +333,16 @@ check-release: .FORCE
 	fi; \
 	$(MAKE) -s check-requirements || FAIL=1; \
 	$(MAKE) -s check-go-version || FAIL=1; \
+	$(MAKE) -s check-generated || FAIL=1; \
+	$(MAKE) -s check-clean || FAIL=1; \
+	$(MAKE) -s check-pushed || FAIL=1; \
 	if [ $$FAIL -ne 0 ]; then echo "check-release: v$$V is NOT ready to release"; exit 1; fi; \
 	echo "check-release: v$$V is consistent"
 
-# release does not commit or push: release.bash is the only place that does.
-release: generate check-release build setup_dist distribute_docs dist/Linux-aarch64
+# release builds dist from the commit check-release approved. It does not generate (that
+# stamps new hashes and leaves the tree dirty), commit or push; check-clean at the end
+# fails if the build changed a tracked file.
+release: check-release build setup_dist distribute_docs dist/Linux-aarch64 check-clean
 	@printf "\nready to run\n\n\trelease.bash\n\n"
 
 

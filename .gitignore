@@ -40,3 +40,12 @@ testout/
 
 # HailoRT writes this in the working directory
 hailort.log
+
+# Editor, scratch and backup files
+*.tmp
+*.swp
+*.swo
+*~
+*.bak
+*.orig
+.DS_Store
