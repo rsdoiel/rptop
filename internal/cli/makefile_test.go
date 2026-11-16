@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"encoding/json"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -83,6 +84,84 @@ func TestMakefileReleaseDoesNotCommitOrPush(t *testing.T) {
 	for _, dep := range strings.Fields(string(m[1])) {
 		if dep == "save" || dep == "publish" || dep == "refresh" {
 			t.Errorf("the release target depends on %q, which commits or pushes", dep)
+		}
+	}
+}
+
+// requirementsCheck runs `make check-requirements` in a copy of the files it reads,
+// after change has edited the copy of codemeta.json.
+func requirementsCheck(t *testing.T, change func(reqs []string) []string) (string, error) {
+	t.Helper()
+	dir := t.TempDir()
+	for _, f := range []string{"Makefile", "go.mod", "go.sum"} {
+		b, err := os.ReadFile(filepath.Join("../..", f))
+		if err != nil {
+			t.Fatal(err)
+		}
+		os.WriteFile(filepath.Join(dir, f), b, 0o644)
+	}
+	raw, err := os.ReadFile("../../codemeta.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var doc map[string]any
+	if err := json.Unmarshal(raw, &doc); err != nil {
+		t.Fatal(err)
+	}
+	var reqs []string
+	for _, r := range doc["softwareRequirements"].([]any) {
+		reqs = append(reqs, r.(string))
+	}
+	doc["softwareRequirements"] = change(reqs)
+	out, _ := json.Marshal(doc)
+	os.WriteFile(filepath.Join(dir, "codemeta.json"), out, 0o644)
+	b, err := exec.Command("make", "-s", "-C", dir, "check-requirements").CombinedOutput()
+	return string(b), err
+}
+
+func without(reqs []string, prefix string) []string {
+	var out []string
+	for _, r := range reqs {
+		if !strings.HasPrefix(r, prefix) {
+			out = append(out, r)
+		}
+	}
+	return out
+}
+
+// softwareRequirements and go.mod must agree in both directions (a dependency that
+// was missing from the list was not noticed before).
+func TestCheckRequirements(t *testing.T) {
+	if out, err := requirementsCheck(t, func(r []string) []string { return r }); err != nil || !strings.Contains(out, "consistent") {
+		t.Errorf("the real files must pass: %v\n%s", err, out)
+	}
+	cases := []struct {
+		name   string
+		change func([]string) []string
+		want   []string
+	}{
+		{"a direct dependency is not listed",
+			func(r []string) []string { return without(r, "charm.land/lipgloss/v2") },
+			[]string{"charm.land/lipgloss/v2", "does not list"}},
+		{"a listed version differs from go.mod",
+			func(r []string) []string {
+				return append(without(r, "charm.land/bubbletea/v2"), "charm.land/bubbletea/v2 >= 2.0.0")
+			},
+			[]string{"charm.land/bubbletea/v2", "go.mod requires v2.1.0"}},
+		{"a listed module is not in go.mod",
+			func(r []string) []string { return append(r, "example.com/ghost >= 1.0.0") },
+			[]string{"example.com/ghost", "go.mod does not require"}},
+	}
+	for _, c := range cases {
+		out, err := requirementsCheck(t, c.change)
+		if err == nil {
+			t.Errorf("%s: check-requirements passed\n%s", c.name, out)
+			continue
+		}
+		for _, w := range c.want {
+			if !strings.Contains(out, w) {
+				t.Errorf("%s: output lacks %q:\n%s", c.name, w, out)
+			}
 		}
 	}
 }

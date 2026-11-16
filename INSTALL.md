@@ -24,7 +24,7 @@ Installing from source
 
 - Go >= 1.27.3
 - GNU Make >= 3
-- Pandoc >= 3.9, to build the man pages (optional; `make install` skips pages that were not built)
+- Pandoc >= 3.1.11, to build the man pages (optional; `make install` skips pages that were not built)
 - For the Hailo temperature (optional): HailoRT >= 5.4.0 with its headers (`/usr/include/hailo/hailort.h`) and a C compiler
 
 The Makefile builds with the `hailo` tag when it finds `/usr/include/hailo/hailort.h`, and without it otherwise. Without

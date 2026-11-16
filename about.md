@@ -64,14 +64,21 @@ A vitals dashboard for a Raspberry Pi 5 with an optional AI HAT+ 2: a terminal d
 ## Software Requirements
 
 - Go >= 1.27.3
+- charm.land/bubbletea/v2 >= 2.1.0
+- charm.land/bubbles/v2 >= 2.2.1
+- charm.land/lipgloss/v2 >= 2.0.6
+- github.com/charmbracelet/x/ansi >= 0.11.9
+- github.com/charmbracelet/x/term >= 0.2.2
 
 
 ## Software Suggestions
 
 - CMTools >= 0.0.46
-- Pandoc >= 3.9
+- Pandoc >= 3.1.11
 - GNU Make >= 3
+- vcgencmd (libraspberrypi-bin), for the PMIC temperature, the core voltage and throttling
 - HailoRT >= 5.4.0
 - A C compiler (GCC or Clang) for the Hailo temperature
+- jq, zip and the GitHub CLI (gh), to run make check-release, make release and release.bash
 
 

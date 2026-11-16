@@ -222,6 +222,28 @@ check-go-version: .FORCE
 	if [ $$FAIL -ne 0 ]; then exit 1; fi; \
 	echo "check-go-version: Go $$GM is consistent"
 
+# check-requirements keeps codemeta.json's softwareRequirements and go.mod in step, in
+# both directions. A softwareRequirements entry that is a Go module ("charm.land/x/v2
+# >= 2.1.0", the first path element having a dot) must be a direct requirement of go.mod
+# at that version, and every direct requirement of go.mod must be listed. Entries that are
+# not modules ("Go >= 1.27.3") are left alone. It writes nothing. check-release runs it.
+check-requirements: .FORCE
+	@LISTED="$$(jq -r '.softwareRequirements[]? | select(test("^[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)+/")) | gsub(" >= "; " ")' codemeta.json)"; \
+	WANT="$$(go list -m -f '{{if and (not .Indirect) (not .Main)}}{{.Path}} {{.Version}}{{end}}' all)"; \
+	PROBS="$$( { printf '%s\n' "$$WANT" | sed 's/^/W /'; printf '%s\n' "$$LISTED" | sed 's/^/L /'; } | awk ' \
+		$$1 == "W" && NF >= 3 { want[$$2] = $$3; next } \
+		$$1 == "L" && NF >= 3 { listed[$$2] = $$3 } \
+		END { \
+			for (m in listed) { \
+				if (!(m in want)) { print "softwareRequirements names " m ", which go.mod does not require directly"; continue } \
+				w = want[m]; sub(/^v/, "", w); \
+				if (w != listed[m]) print "softwareRequirements says " m " >= " listed[m] ", go.mod requires v" w \
+			} \
+			for (m in want) if (!(m in listed)) print "go.mod requires " m " " want[m] ", softwareRequirements does not list it" \
+		}' | sort )"; \
+	if [ -n "$$PROBS" ]; then printf '%s\n' "$$PROBS" | sed 's/^/check-requirements: /'; exit 1; fi; \
+	echo "check-requirements: softwareRequirements and go.mod are consistent"
+
 # check-release reads the files a release is cut from and fails when they
 # disagree; it writes nothing. Run it before `make release` (the release target
 # runs it too, after generate). It fails when
@@ -230,7 +252,7 @@ check-go-version: .FORCE
 #   - datePublished is not today's date, the release day,
 #   - v$(VERSION) is already tagged here or on origin (codemeta.json was not bumped),
 #   - releaseNotes are the same as the last tag's (not written for this release),
-#   - softwareRequirements names a github.com/rsdoiel module at a version go.mod does not require,
+#   - softwareRequirements and go.mod disagree about the Go modules (check-requirements),
 #   - the Go version policy fails (check-go-version).
 check-release: .FORCE
 	@FAIL=0; V="$(VERSION)"; TODAY="$$(date +%Y-%m-%d)"; \
@@ -258,12 +280,7 @@ check-release: .FORCE
 		OLD="$$(git show "$$LAST:codemeta.json" 2>/dev/null | jq -r '.releaseNotes // empty')"; \
 		[ "$$NEW" != "$$OLD" ] || bad "releaseNotes are the same as $$LAST's: write them for v$$V"; \
 	fi; \
-	for REQ in $$(jq -r '.softwareRequirements[]? | select(startswith("github.com/rsdoiel/")) | gsub(" "; "@")' codemeta.json); do \
-		M="$${REQ%%@*}"; MIN="$${REQ##*@}"; \
-		GM="$$(grep -o "$$M v[^ ]*" go.mod | head -1 | sed 's/.* v//')"; \
-		[ -n "$$GM" ] || { bad "softwareRequirements names $$M, which go.mod does not require"; continue; }; \
-		[ "$$GM" = "$$MIN" ] || bad "softwareRequirements says $$M >= $$MIN, go.mod requires v$$GM"; \
-	done; \
+	$(MAKE) -s check-requirements || FAIL=1; \
 	$(MAKE) -s check-go-version || FAIL=1; \
 	if [ $$FAIL -ne 0 ]; then echo "check-release: v$$V is NOT ready to release"; exit 1; fi; \
 	echo "check-release: v$$V is consistent"
