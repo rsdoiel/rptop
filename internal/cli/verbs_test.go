@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -385,5 +386,32 @@ func TestErrorsClassifiedBySentinelNotText(t *testing.T) {
 	err := fmt.Errorf("the words not present on this machine appear here: %w", errors.New("other"))
 	if ExitCode(err) != ExitInternal {
 		t.Error("an error is classified by its text")
+	}
+}
+
+// Each help page is the source of a man page. pandoc warns when it misreads
+// something (a pair of $ signs in an example became TeX math), and a page that
+// builds with a warning is a page that renders wrongly.
+func TestHelpPagesConvertWithoutPandocWarnings(t *testing.T) {
+	pandoc, err := exec.LookPath("pandoc")
+	if err != nil {
+		t.Skip("pandoc is not installed")
+	}
+	pages := map[string]string{"rptop": HelpText}
+	for v, text := range verbHelp {
+		pages["rptop-"+v] = text
+	}
+	for name, text := range pages {
+		var page, errOut bytes.Buffer
+		helpPage(&page, text)
+		cmd := exec.Command(pandoc, "--from", "markdown", "--to", "man", "-s")
+		cmd.Stdin, cmd.Stderr = &page, &errOut
+		if err := cmd.Run(); err != nil {
+			t.Errorf("%s: pandoc failed: %v\n%s", name, err, errOut.String())
+			continue
+		}
+		if errOut.Len() != 0 {
+			t.Errorf("%s: pandoc warned:\n%s", name, errOut.String())
+		}
 	}
 }

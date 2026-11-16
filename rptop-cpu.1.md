@@ -82,6 +82,8 @@ class of the first failure in the order shown above, and the counts are printed.
 
 # EXAMPLES
 
+~~~shell
 rptop cpu core 2
 
 rptop cpu total -i 500ms -n
+~~~

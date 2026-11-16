@@ -76,4 +76,6 @@ class of the first failure in the order shown above, and the counts are printed.
 
 # EXAMPLES
 
+~~~shell
 rptop disk write -i 5s
+~~~

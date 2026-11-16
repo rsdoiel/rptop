@@ -52,6 +52,8 @@ Each run is one file: a meta line, one sample line per interval, and a meta_end 
 
 # EXAMPLES
 
+~~~shell
 rptop record -label before-ollama -duration 10m
 
 f=$(rptop record -duration 60s -out runs/) && jq -s 'map(.["temp.soc"]) | max' "$f"
+~~~

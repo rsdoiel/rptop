@@ -77,4 +77,6 @@ class of the first failure in the order shown above, and the counts are printed.
 
 # EXAMPLES
 
+~~~shell
 rptop temp soc -above 70 && echo hot
+~~~

@@ -173,7 +173,7 @@ func buildVerbHelp() map[string]string {
 			b.WriteString(verbExitStatus)
 		}
 		if d.examples != "" {
-			b.WriteString("\n# EXAMPLES\n\n" + d.examples + "\n")
+			b.WriteString("\n# EXAMPLES\n\n~~~shell\n" + d.examples + "\n~~~\n")
 		}
 		out[d.name] = b.String()
 	}
