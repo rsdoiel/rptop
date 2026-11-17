@@ -5,4 +5,4 @@
 
 To match the workspace standard (knowledge and opml are the models; Go 1.27.3 across repositories). Do one repository at a time; run the tests and `make -n release` after each step.
 
-- [ ] Add INSTALL_NOTES_macOS.md and INSTALL_NOTES_Windows.md (copy from knowledge); the generated installers point at them.
+- [x] INSTALL_NOTES_macOS.md and INSTALL_NOTES_Windows.md: not applicable. rptop is Raspberry Pi only (Linux aarch64), so the macOS and Windows notes would only mislead; the one line in the generated installer.sh that names the macOS notes is the cmt template and prints only on macOS.
