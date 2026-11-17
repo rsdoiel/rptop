@@ -1,4 +1,4 @@
-%rptop-cpu(1) user manual | version 0.0.1 1288322
+%rptop-cpu(1) user manual | version 0.0.1 01f151d
 % R. S. Doiel
 % 2026-11-15
 
