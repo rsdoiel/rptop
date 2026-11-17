@@ -55,7 +55,12 @@ func TestMakefileManPagesDoNotDependOnTheFilesPresent(t *testing.T) {
 	os.WriteFile(filepath.Join(dir, "rptop.1.md"), []byte("x\n"), 0o644)
 
 	// A recipe is expanded when it runs, so this prints the value make really uses.
-	out, err := exec.Command("make", "-s", "-C", dir, "--eval=print-man-pages: ; @echo $(MAN_PAGES_1)", "print-man-pages").Output()
+	// The extra rule comes from a second makefile, not --eval, which GNU Make 3.81
+	// (the one macOS ships) does not have.
+	if err := os.WriteFile(filepath.Join(dir, "print.mk"), []byte("print-man-pages: ; @echo $(MAN_PAGES_1)\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	out, err := exec.Command("make", "-s", "-C", dir, "-f", "Makefile", "-f", "print.mk", "print-man-pages").Output()
 	if err != nil {
 		t.Fatalf("make: %v", err)
 	}
