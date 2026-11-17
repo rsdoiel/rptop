@@ -36,9 +36,9 @@
   ],
   "softwareRequirements": [
     "Go >= 1.27.3",
-    "charm.land/bubbletea/v2 >= 2.1.0",
+    "charm.land/bubbletea/v2 >= 2.1.1",
     "charm.land/bubbles/v2 >= 2.2.1",
-    "charm.land/lipgloss/v2 >= 2.0.6",
+    "charm.land/lipgloss/v2 >= 2.1.1",
     "github.com/charmbracelet/x/ansi >= 0.11.9",
     "github.com/charmbracelet/x/term >= 0.2.2"
   ],

@@ -127,6 +127,21 @@ func requirementsCheck(t *testing.T, change func(reqs []string) []string) (strin
 	return string(b), err
 }
 
+// goModVersion returns the version go.mod requires for module, so a test does not
+// go stale each time the dependency is updated.
+func goModVersion(t *testing.T, module string) string {
+	t.Helper()
+	b, err := os.ReadFile("../../go.mod")
+	if err != nil {
+		t.Fatal(err)
+	}
+	m := regexp.MustCompile(`(?m)^\s*` + regexp.QuoteMeta(module) + `\s+(v\S+)`).FindSubmatch(b)
+	if m == nil {
+		t.Fatalf("go.mod does not require %s", module)
+	}
+	return string(m[1])
+}
+
 func without(reqs []string, prefix string) []string {
 	var out []string
 	for _, r := range reqs {
@@ -155,7 +170,7 @@ func TestCheckRequirements(t *testing.T) {
 			func(r []string) []string {
 				return append(without(r, "charm.land/bubbletea/v2"), "charm.land/bubbletea/v2 >= 2.0.0")
 			},
-			[]string{"charm.land/bubbletea/v2", "go.mod requires v2.1.0"}},
+			[]string{"charm.land/bubbletea/v2", "go.mod requires " + goModVersion(t, "charm.land/bubbletea/v2")}},
 		{"a listed module is not in go.mod",
 			func(r []string) []string { return append(r, "example.com/ghost >= 1.0.0") },
 			[]string{"example.com/ghost", "go.mod does not require"}},
